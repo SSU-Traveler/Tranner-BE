@@ -3,5 +3,5 @@ package com.project.capstone.schedule.service;
 import org.springframework.stereotype.Service;
 
 @Service
-public class scheduleService {
+public class ScheduleService {
 }
