@@ -6,9 +6,9 @@ import jakarta.validation.constraints.NotNull;
 
 public record MemberRegisterRequest(
         @NotBlank
-        String id,
+        String username,
         @NotBlank
-        String pw,
+        String password,
         @Email
         @NotBlank
         String memberEmail,
