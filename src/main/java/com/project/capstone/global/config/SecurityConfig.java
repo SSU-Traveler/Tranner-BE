@@ -27,15 +27,14 @@ public class SecurityConfig {
         this.jwtUtil = jwtUtil;
     }
 
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-
         return configuration.getAuthenticationManager();
     }
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
-
         return new BCryptPasswordEncoder();
     }
 
@@ -45,7 +44,6 @@ public class SecurityConfig {
         //csrf disable
         http
                 .csrf((auth) -> auth.disable());
-
         //From 로그인 방식 disable
         http
                 .formLogin((auth) -> auth.disable());

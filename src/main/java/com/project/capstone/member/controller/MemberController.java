@@ -24,5 +24,10 @@ public class MemberController {
         return ResponseEntity.ok("회원가입에 성공하였습니다.");
     }
 
+    @PostMapping("/admin")
+    public String admin() {
+        return "jwt 검증 완료";
+    }
+
 
 }
