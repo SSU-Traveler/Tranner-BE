@@ -5,6 +5,3 @@ spring:
     secret: 231001941d10ebcc4fa9e68707c07752e576b289e6396834e968034d7656a8b8
   profiles:
     active: db
-  logging:
-    level:
-      org.hibernate: DEBUG

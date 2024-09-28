@@ -16,3 +16,6 @@ spring:
       ddl-auto: none  # 설정해야 테이블 자동생성
     open-in-view: false
     show_sql: true
+  logging:
+      level:
+        org.hibernate: DEBUG
