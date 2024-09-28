@@ -6,6 +6,7 @@ import com.project.capstone.member.dto.request.MemberRegisterRequest;
 import com.project.capstone.member.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,14 +19,15 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/register")
-    public String register(@RequestBody @Valid MemberRegisterRequest request) {
+    public ResponseEntity<String> register(@Valid @RequestBody MemberRegisterRequest request) {
         memberService.register(request);
-        return "ok";
+        return ResponseEntity.ok("회원가입에 성공하였습니다.");
     }
 
-    @PostMapping("/login")
-    public String login(@RequestBody @Valid MemberLoginRequest memberLoginRequest) {
-        return "로그인 성공";
+    @PostMapping("/admin")
+    public String admin() {
+        return "jwt 검증 완료";
     }
+
 
 }
