@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 import static java.time.LocalDateTime.*;
 
 @Service
@@ -28,7 +30,7 @@ public class MemberService {
                 .password(bCryptPasswordEncoder.encode(request.password())) //비밀번호는 암호화하여 저장
                 .email(request.username())
                 .nickname(request.nickname())
-                .registerDate(now())
+                .registerDate(LocalDate.now())
                 .role("ROLE_ADMIN")
                 .build();
         memberRepository.save(member);
