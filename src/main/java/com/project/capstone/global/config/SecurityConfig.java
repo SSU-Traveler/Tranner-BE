@@ -1,40 +1,74 @@
 package com.project.capstone.global.config;
 
+import com.project.capstone.global.jwt.JwtFilter;
+import com.project.capstone.global.jwt.JwtUtil;
+import com.project.capstone.global.jwt.LoginFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable()) // CSRF 비활성화
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/members/register").permitAll() // 회원가입 API는 인증 없이 접근 가능
-                        .anyRequest().authenticated() // 나머지 요청은 인증 필요
-                );
+    private final AuthenticationConfiguration authenticationConfiguration;
+    private final JwtUtil jwtUtil;
 
-        return http.build();
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil) {
+
+        this.authenticationConfiguration = authenticationConfiguration;
+        this.jwtUtil = jwtUtil;
+    }
+
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationManager authManager(HttpSecurity http) throws Exception {
-        AuthenticationManagerBuilder authenticationManagerBuilder =
-                http.getSharedObject(AuthenticationManagerBuilder.class);
-        return authenticationManagerBuilder.build();
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        //csrf disable
+        http
+                .csrf((auth) -> auth.disable());
+        //From 로그인 방식 disable
+        http
+                .formLogin((auth) -> auth.disable());
+
+        //http basic 인증 방식 disable
+        http
+                .httpBasic((auth) -> auth.disable());
+
+
+        http
+                .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers("/login", "/api/member/register").permitAll()
+                        .requestMatchers("/admin").hasRole("ADMIN")
+                        .anyRequest().authenticated());
+
+        http
+                .addFilterBefore(new JwtFilter(jwtUtil), LoginFilter.class);
+        http
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+
+        //세션 설정
+        http
+                .sessionManagement((session) -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        return http.build();
     }
 }

@@ -2,40 +2,39 @@ package com.project.capstone.member.service;
 
 import com.project.capstone.member.domain.Member;
 import com.project.capstone.member.dto.request.MemberRegisterRequest;
-import com.project.capstone.member.dto.response.MemberResponse;
+//import com.project.capstone.member.repository.MemberRepository;
 import com.project.capstone.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 
+import static java.time.LocalDateTime.*;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MemberService {
+
     private final MemberRepository memberRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public MemberResponse registerMember(MemberRegisterRequest request) {
-
-
-        if (memberRepository.existsById(request.id())) {
-            return new MemberResponse(false, "아이디가 이미 존재합니다.", null);
+    public void register(MemberRegisterRequest request) {
+        if(memberRepository.existsByUsername(request.username())) {
+            return;
         }
-
-        if (memberRepository.existsByNickname(request.nickname())) {
-            return new MemberResponse(false, "닉네임이 이미 사용 중입니다.", null);
-        }
-
-        if (memberRepository.existsByEmail(request.memberEmail())) {
-            return new MemberResponse(false, "이메일이 이미 등록되어 있습니다.", null);
-        }
-        Member member = new Member();
-        member.setId(request.id());
-        member.setPw(request.pw());
-        member.setEmail(request.memberEmail());
-        member.setNickname(request.nickname());
-        member.setRegisterdate(LocalDate.now());
+        Member member = Member.builder()
+                .username(request.username())
+                .password(bCryptPasswordEncoder.encode(request.password())) //비밀번호는 암호화하여 저장
+                .email(request.username())
+                .nickname(request.nickname())
+                .registerDate(LocalDate.now())
+                .role("ROLE_ADMIN")
+                .build();
         memberRepository.save(member);
 
-        return new MemberResponse(true, "회원가입이 완료되었습니다.", member.getMemberid());
     }
+
 }

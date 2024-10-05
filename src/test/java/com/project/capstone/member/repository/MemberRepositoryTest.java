@@ -1,90 +1,81 @@
 package com.project.capstone.member.repository;
 
 import com.project.capstone.member.domain.Member;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@DataJpaTest // JPA 관련 테스트 설정
-public class MemberRepositoryTest {
+@Slf4j
+@DataJpaTest
+/**
+ * MySQL에서 test 해볼려면, 아래 @SpringBootTest, @Transcational, @Rollback(value = false) 셋 다 있어야함
+ */
+//@SpringBootTest
+//@Transactional
+// @Rollback(value = false
+class MemberRepositoryTest {
 
     @Autowired
-    private MemberRepository memberRepository;
+    private MemberRepository repository;
 
     @Test
-    @Transactional // 테스트 종료 후 롤백
-    public void testSaveMember() {
-        // Given: 새로운 회원 정보
-        Member member = new Member();
-        member.setId("testUser");
-        member.setPw("password123");
-        member.setEmail("test@example.com");
-        member.setNickname("nickname");
+    @DisplayName("멤버 한명을 C,R")
+    void insert(){
 
-        // When: 회원 정보를 저장
-        Member savedMember = memberRepository.save(member);
+        // given
+        Member member1 = new Member("member1", "1111", "양", "1@gmail.com", LocalDate.now(), null);
+        repository.saveAndFlush(member1);
+        log.info("저장할 멤버 = {}",member1);
 
-        // Then: 저장된 회원 정보가 데이터베이스에 잘 들어갔는지 확인
-        assertThat(savedMember).isNotNull();
-        assertThat(savedMember.getId()).isEqualTo("testUser");
-        assertThat(savedMember.getEmail()).isEqualTo("test@example.com");
-        assertThat(savedMember.getNickname()).isEqualTo("nickname");
+        // when
+        Member foundMember = repository.findById(member1.getId()).get();
+        log.info("DB에서 찾은 멤버 = {}",foundMember);
+
+        // then
+        assertThat(foundMember).isEqualTo(foundMember);
     }
 
     @Test
-    @Transactional
-    public void testExistsById() {
-        // Given: 새로운 회원 정보
-        Member member = new Member();
-        member.setId("testUser");
-        member.setPw("password123");
-        member.setEmail("test@example.com");
-        member.setNickname("nickname");
-        memberRepository.save(member); // 회원 정보를 먼저 저장
+    @DisplayName("멤버 한명을 U")
+    void update() {
 
-        // When: ID로 회원 존재 여부 확인
-        boolean exists = memberRepository.existsById("testUser");
+        // given
+        Member savedMember = new Member("문상준", "1111", "member1", "1@gmail.com", LocalDate.now(), null);
+        repository.saveAndFlush(savedMember);
+        log.info("변경 전 닉네임 = {}", savedMember.getNickname());
 
-        // Then: 회원이 존재하는지 확인
-        assertThat(exists).isTrue();
+        // when
+        Member updatedMember=repository.findById(savedMember.getId()).get();
+        updatedMember.changeNickname("강민석 ㅄ");
+
+        // then
+        updatedMember = repository.findById(savedMember.getId()).get();
+        log.info("변경 후 닉네임 = {}", updatedMember.getNickname());
+        assertThat(updatedMember.getNickname()).isEqualTo(updatedMember.getNickname());
     }
 
     @Test
-    @Transactional
-    public void testExistsByNickname() {
-        // Given: 새로운 회원 정보
-        Member member = new Member();
-        member.setId("testUser");
-        member.setPw("password123");
-        member.setEmail("test@example.com");
-        member.setNickname("nickname");
-        memberRepository.save(member); // 회원 정보를 먼저 저장
+    @DisplayName("멤버 한명을 D")
+    void delete() {
 
-        // When: 닉네임으로 회원 존재 여부 확인
-        boolean exists = memberRepository.existsByNickname("nickname");
+        // given
+        Member savedMember = new Member("문상준", "1111", "member1", "1@gmail.com", LocalDate.now(), null);
+        repository.save(savedMember);
 
-        // Then: 회원이 존재하는지 확인
-        assertThat(exists).isTrue();
-    }
-
-    @Test
-    @Transactional
-    public void testExistsByEmail() {
-        // Given: 새로운 회원 정보
-        Member member = new Member();
-        member.setId("testUser");
-        member.setPw("password123");
-        member.setEmail("test@example.com");
-        member.setNickname("nickname");
-        memberRepository.save(member); // 회원 정보를 먼저 저장
-
-        // When: 이메일로 회원 존재 여부 확인
-        boolean exists = memberRepository.existsByEmail("test@example.com");
-
-        // Then: 회원이 존재하는지 확인
-        assertThat(exists).isTrue();
+        // when
+        repository.delete(savedMember);
+//        log.info("{}",repository.findById(savedMember.getId()).get());
+        // then
+        assertThrows(NoSuchElementException.class, () -> {
+            repository.findById(savedMember.getId()).get();
+        });
     }
 }
