@@ -1,4 +1,7 @@
 package com.project.capstone.schedule.repository;
 
-public interface ScheduleRepository {
+import com.project.capstone.schedule.domain.Schedule;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ScheduleRepository extends JpaRepository<Schedule,Long> {
 }
