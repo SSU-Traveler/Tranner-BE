@@ -1,7 +1,7 @@
 # Tranner
 # Develop 
 
-###241015 수정 내용
+#h2 241015 수정 내용
 1. schedule.controller의 ScheduleController에 신규 스케줄을 생성하는
    public ResponseEntity<String> addSchedule(HttpServletRequest request,
                                               @Validated @RequestBody AddScheduleRequest scheduleRequest)
