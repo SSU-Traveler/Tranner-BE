@@ -1,12 +1,11 @@
 package com.project.capstone.detailSchedule.repository;
 
-import com.project.capstone.bookmark.repository.BookmarkRepository;
-import com.project.capstone.detailSchedule.domain.DetailSchedule;
+import com.project.capstone.schedule.domain.DetailSchedule;
 import com.project.capstone.member.domain.Member;
 import com.project.capstone.member.repository.MemberRepository;
 import com.project.capstone.schedule.domain.Schedule;
+import com.project.capstone.schedule.repository.DetailScheduleRepository;
 import com.project.capstone.schedule.repository.ScheduleRepository;
-import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,9 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

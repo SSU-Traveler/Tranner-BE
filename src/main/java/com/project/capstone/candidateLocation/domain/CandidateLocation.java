@@ -31,10 +31,6 @@ public class CandidateLocation { // 장바구니임 , 찜 아님
     @Column(name = "location", nullable = false)
     private String location;
 
-    @Builder
-    public CandidateLocation(String location) {
-        this.location = location;
-    }
 
     /**
      * toString() 에서 @ManyToOne의 객체를 넣을거면, 직접 구현해야됨
@@ -45,5 +41,11 @@ public class CandidateLocation { // 장바구니임 , 찜 아님
                 "id=" + id + ", " +
                 "장바구니 담은 멤버=" + member.getUsername() + ", " +
                 "location=" + location + ")";
+    }
+
+    @Builder
+    public CandidateLocation(Member member, String location) {
+        this.member = member;
+        this.location = location;
     }
 }
