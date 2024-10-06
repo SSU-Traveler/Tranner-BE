@@ -13,7 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class AddScheduleRequest{
+public class EditScheduleRequest {
 
     @NotBlank(message = "여행 이름은 필수값입니다.")
     String name;

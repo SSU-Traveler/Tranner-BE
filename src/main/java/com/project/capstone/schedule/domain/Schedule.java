@@ -1,6 +1,5 @@
 package com.project.capstone.schedule.domain;
 
-import com.project.capstone.detailSchedule.domain.DetailSchedule;
 import com.project.capstone.member.domain.Member;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,7 +17,7 @@ import java.util.Optional;
 public class Schedule {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "schedule_id",updatable = false)
     private Long id;
 
@@ -98,11 +97,13 @@ public class Schedule {
 //    }
 
     @Builder
-    public Schedule(String name, Integer how_many_people,LocalDate startDate, LocalDate endDate) {
+    public Schedule(String name, Integer howManyPeople, LocalDate startDate, LocalDate endDate, List<DetailSchedule> detailSchedules) {
         this.name = name;
-        this.howManyPeople = how_many_people;
+        this.howManyPeople = howManyPeople;
         this.startDate = startDate;
         this.endDate = endDate;
+
+        this.detailSchedules = detailSchedules;
     }
 
     /**
