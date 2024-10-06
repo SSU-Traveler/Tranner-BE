@@ -30,4 +30,5 @@ public class EditScheduleRequest {
 
     @NotNull
     List<DetailScheduleDTO> detailSchedules;
+
 }
