@@ -3,6 +3,7 @@ package com.project.capstone.schedule.controller;
 import com.project.capstone.global.jwt.JwtUtil;
 import com.project.capstone.schedule.domain.Schedule;
 import com.project.capstone.schedule.dto.request.AddScheduleRequest;
+import com.project.capstone.schedule.dto.request.EditScheduleRequest;
 import com.project.capstone.schedule.dto.response.FindScheduleDTO;
 import com.project.capstone.schedule.service.ScheduleService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,5 +42,25 @@ public class ScheduleController {
         scheduleService.saveSchedule(username, scheduleRequest);
 
         return ResponseEntity.ok("스케줄 생성 성공");
+    }
+
+    // 기존 스케줄 수정
+    @PostMapping("/edit")
+    public ResponseEntity<String> editSchedule(HttpServletRequest request,
+                                               @Validated @RequestBody EditScheduleRequest scheduleRequest){
+
+        String tokenStr = request.getHeader("Authorization");
+        String token = tokenStr.split(" ")[1];
+        String username = jwtUtil.getUsername(token);
+
+        log.info("스케줄 수정 요청을 한 멤버 = {}",username);
+        log.info("스케줄 수정 요청을 통해 넘어온 정보 = {}", scheduleRequest);
+
+        scheduleService.editSchedule(username,scheduleRequest);
+
+        List<FindScheduleDTO> allSchedules = scheduleService.findAllSchedules(username);
+        log.info("스케줄 변경 이후 {}의 스케줄들 = {}", username, allSchedules);
+
+        return ResponseEntity.ok("스케줄 수정 성공");
     }
 }

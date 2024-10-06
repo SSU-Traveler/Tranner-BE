@@ -23,4 +23,12 @@
 ### 241006 수정 내용
 1. schedule.dto에 기존 스케줄 수정시 받은 스케줄을 담는 dto EditScheduleRequest 생성
 2. db에 찾고자 하는 스케줄이 없을 때, 발생하는 exception ScheduleNotFoundException
-3. 
+3. schedule.controller의 ScheduleController에 기존 스케줄을 수정하는
+   ```
+   public ResponseEntity<String> editSchedule(HttpServletRequest request,
+                                               @Validated @RequestBody EditScheduleRequest scheduleRequest)
+   ```
+4. schedule.service의 ScheduleService에 해당 멤버의 기존 스케줄을 수정하는 메소드
+   ```
+   public void editSchedule(String username, EditScheduleRequest editScheduleDTO)
+   ```

@@ -3,6 +3,8 @@ package com.project.capstone.schedule.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "detail_schedules")
 @Getter
@@ -30,16 +32,9 @@ public class DetailSchedule {
     @Column(name = "day_sequence", nullable = false)
     private Integer daySequence;
 
-//    public void editDaySequence(Integer daySequence){
-//        this.daySequence = daySequence;
-//    }
-
     @Column(name = "location_sequence", nullable = false)
     private Integer locationSequence;
 
-//    public void editLocationSequence(Integer locationSequence){
-//        this.locationSequence = locationSequence;
-//    }
 
     @Column(name = "location_name", nullable = false)
     private String locationName;

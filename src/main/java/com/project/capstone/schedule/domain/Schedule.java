@@ -36,16 +36,8 @@ public class Schedule {
     @Column(name = "schedule_name", nullable = false)
     private String name;
 
-    public void editName(String name4newSchedule) {
-        this.name=name4newSchedule;
-    }
-
     @Column(name = "how_many_people", nullable = false)
     private Integer howManyPeople;
-
-    public void editHowManyPeople(Integer howManyPeople4newSchedule) {
-        this.howManyPeople=howManyPeople4newSchedule;
-    }
 
     @Temporal(TemporalType.DATE)
     @Column(name = "start_date", nullable = false)
@@ -55,13 +47,8 @@ public class Schedule {
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
-    public void editDate(LocalDate startDate4newSchedule, LocalDate endDate4newSchedule) {
-        this.startDate = startDate4newSchedule;
-        this.endDate = endDate4newSchedule;
-    }
-
     // === 일자별 스케줄 === //
-    @OneToMany(mappedBy = "schedule", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
     @Setter(value = AccessLevel.NONE)
     private List<DetailSchedule> detailSchedules = new ArrayList<>();
 
@@ -81,20 +68,6 @@ public class Schedule {
             detailSchedule.addSchedule(this);
         }
     }
-
-//    // 두 스케줄의 순서를 변경 (날짜랑 장소 순서 모두 swap)
-//    public void swapDetailSchedule(DetailSchedule scheduleToSwapFirst, DetailSchedule scheduleToSwapSecond){
-//        // 두 스케줄의 날짜 순서를 변경
-//        Integer tmp1 = scheduleToSwapFirst.getDaySequence();
-//        scheduleToSwapFirst.editDaySequence(scheduleToSwapSecond.getDaySequence());
-//        scheduleToSwapSecond.editDaySequence(tmp1);
-//
-//        // 두 스케줄의 장소 순서를 변경
-//        Integer tmp2 = scheduleToSwapFirst.getLocationSequence();
-//        scheduleToSwapFirst.editLocationSequence(scheduleToSwapSecond.getLocationSequence());
-//        scheduleToSwapSecond.editLocationSequence(tmp2);
-//
-//    }
 
     @Builder
     public Schedule(String name, Integer howManyPeople, LocalDate startDate, LocalDate endDate, List<DetailSchedule> detailSchedules) {
