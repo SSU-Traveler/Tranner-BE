@@ -35,7 +35,6 @@ public class DetailSchedule {
     @Column(name = "location_sequence", nullable = false)
     private Integer locationSequence;
 
-
     @Column(name = "location_name", nullable = false)
     private String locationName;
 

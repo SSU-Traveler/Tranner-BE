@@ -20,6 +20,20 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class ScheduleController {
+    private final ScheduleService scheduleService;
+    private final CustomMemberDetailService customMemberDetailService;
+    private final JwtUtil jwtUtil;
+
+    @GetMapping("/add")
+    public ResponseEntity<ListScheduleResponse> CreateSchedule(HttpServletRequest request, @RequestBody GetAddSchedule locations) {
+        String tokenStr = request.getHeader("Authorization");
+        String token = tokenStr.split(" ")[1];
+        String username = jwtUtil.getUsername(token);
+
+        ListScheduleResponse listScheduleResponse =  scheduleService.AddCandidateLocation(locations, username);
+        return ResponseEntity.ok().body(listScheduleResponse);
+    }
+
 
     private final JwtUtil jwtUtil;
     private final ScheduleService scheduleService;
