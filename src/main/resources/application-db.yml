@@ -15,7 +15,7 @@ spring:
         format_sql: true
         use_sql_comments: true
     hibernate:
-      ddl-auto: none  # 설정해야 테이블 자동생성
+      ddl-auto: update  # 설정해야 테이블 자동 업데이트
     open-in-view: false
     show_sql: true
   logging:
