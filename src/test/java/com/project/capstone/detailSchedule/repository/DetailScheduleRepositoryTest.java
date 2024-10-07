@@ -42,7 +42,13 @@ class DetailScheduleRepositoryTest {
         memberRepository.saveAndFlush(member1);
 
         // when
-        Schedule schedule1 = new Schedule("내 여행 1", 12, LocalDate.now(), LocalDate.now().plusDays(2));
+        Schedule schedule1=Schedule.builder()
+                .name("내 여행 1")
+                .howManyPeople(12)
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now())
+                .build();
+
         member1.addSchedule(schedule1);
 
         memberRepository.flush();
@@ -87,7 +93,12 @@ class DetailScheduleRepositoryTest {
         Member member1 = new Member("member1", "1111", "양", "1@gmail.com", LocalDate.now(), null);
         memberRepository.saveAndFlush(member1);
 
-        Schedule schedule1 = new Schedule("내 여행 1", 12, LocalDate.now(), LocalDate.now().plusDays(2));
+        Schedule schedule1=Schedule.builder()
+                .name("내 여행 1")
+                .howManyPeople(12)
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now())
+                .build();
         member1.addSchedule(schedule1);
 
         DetailSchedule firstDay_firstLocation = new DetailSchedule(1, 1, "왕왕");
@@ -115,7 +126,12 @@ class DetailScheduleRepositoryTest {
         Member member1 = new Member("member1", "1111", "양", "1@gmail.com", LocalDate.now(), null);
         memberRepository.saveAndFlush(member1);
 
-        Schedule schedule1 = new Schedule("내 여행 1", 12, LocalDate.now(), LocalDate.now().plusDays(2));
+        Schedule schedule1=Schedule.builder()
+                .name("내 여행 1")
+                .howManyPeople(12)
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now())
+                .build();
         member1.addSchedule(schedule1);
 
         DetailSchedule firstDay_firstLocation = new DetailSchedule(1, 1, "왕왕");
