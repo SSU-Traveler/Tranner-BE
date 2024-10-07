@@ -1,8 +1,11 @@
 package com.project.capstone.global.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.capstone.candidateLocation.domain.CandidateLocation;
+import com.project.capstone.candidateLocation.repository.CandidateLocationRepository;
+import com.project.capstone.global.dto.response.LoginResponse;
 import com.project.capstone.member.dto.response.CustomUserDetails;
-import io.jsonwebtoken.io.IOException;
+import com.project.capstone.schedule.dto.response.CandidateLocationResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,8 +17,10 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 // 로그인할 때 사용자를 인증하는 필터
@@ -24,6 +29,7 @@ import java.util.Map;
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final CandidateLocationRepository locationRepository;
 
 
     @Override
@@ -52,7 +58,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     // 검증에 성공했을 경우
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication){
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         String username = customUserDetails.getUsername();
 
@@ -65,6 +71,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String token = jwtUtil.createJwt(username, role, 60 * 60 * 24 * 365 * 100L);
 
         response.addHeader("Authorization", "Bearer " + token);
+        List<CandidateLocation> list = locationRepository.findAll();
+        List<CandidateLocationResponse> candidateLocationList = list.stream().map(CandidateLocationResponse::of).toList();
+        LoginResponse loginResponse = new LoginResponse(candidateLocationList);
+
+        // 응답을 JSON 형식으로 쓰기
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(new ObjectMapper().writeValueAsString(loginResponse));
 
     }
 
