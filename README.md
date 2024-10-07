@@ -32,3 +32,5 @@
    ```
    public void editSchedule(String username, EditScheduleRequest editScheduleDTO)
    ```
+### 241007 수정 내용
+1. schedule.controller의 editSchedule()에서, 쿼리파라미터를 사용하는 방식으로 변경함.
