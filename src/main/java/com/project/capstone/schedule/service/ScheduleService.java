@@ -18,26 +18,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import com.project.capstone.bookmark.domain.Bookmark;
 import com.project.capstone.bookmark.repository.BookmarkRepository;
 import com.project.capstone.candidateLocation.domain.CandidateLocation;
 import com.project.capstone.candidateLocation.repository.CandidateLocationRepository;
-import com.project.capstone.member.domain.Member;
-import com.project.capstone.member.repository.MemberRepository;
 import com.project.capstone.schedule.dto.request.GetAddSchedule;
-import com.project.capstone.schedule.dto.request.Location;
 import com.project.capstone.schedule.dto.response.BookmarkResponse;
 import com.project.capstone.schedule.dto.response.CandidateLocationResponse;
 import com.project.capstone.schedule.dto.response.ListScheduleResponse;
-import com.project.capstone.schedule.repository.ScheduleRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -91,6 +80,9 @@ public class ScheduleService {
         // 기존 스케줄 삭제
         try{
             Schedule beforeSchedule = scheduleRepository.findById(scheduleId).get();
+            log.info("beforeSchedule = {}",beforeSchedule);
+
+//            scheduleRepository.deleteById(scheduleId);
             member.deleteSchedule(beforeSchedule);
         }
         catch (EmptyResultDataAccessException e){
@@ -122,6 +114,7 @@ public class ScheduleService {
                         .locationName(dto.getLocationName())
                         .build())
                 .collect(Collectors.toList());
+    }
 
     @Transactional
     public ListScheduleResponse AddCandidateLocation(GetAddSchedule request, String username) {
