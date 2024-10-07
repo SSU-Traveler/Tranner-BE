@@ -90,7 +90,7 @@ public class Member {
     }
 
     // === 여행 리스트 === //
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Schedule> schedules = new ArrayList<>();
 
     public Optional<Schedule> getSchedule(Schedule schedule){

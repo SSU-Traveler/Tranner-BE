@@ -12,11 +12,11 @@ import com.project.capstone.schedule.dto.response.FindScheduleDTO;
 import com.project.capstone.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.internal.constraintvalidators.bv.AssertFalseValidator;
+
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Period;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -60,20 +60,21 @@ public class ScheduleService {
 
     // 해당 멤버의 스케줄 中 하나를 수정 (일자별 스케줄도 수정됨)
     @Transactional
-    public void editSchedule(String username, EditScheduleRequest editScheduleDTO){
+    public void editSchedule(String username,
+                             Long scheduleId,
+                             EditScheduleRequest editScheduleDTO){
 
         // 스케줄을 수정할 멤버
         Member member = memberRepository.findByUsername(username);
 
-        // 기존 스케줄
-        Optional<Schedule> beforeScheduleOptional = scheduleRepository.findById(editScheduleDTO.getId());
-        if(beforeScheduleOptional.isEmpty()){
-            throw new ScheduleNotFoundException("해당 스케줄이 없어요...");
-        }
-        Schedule beforeSchedule = beforeScheduleOptional.get();
-
         // 기존 스케줄 삭제
-        scheduleRepository.delete(beforeSchedule);
+        try{
+            Schedule beforeSchedule = scheduleRepository.findById(scheduleId).get();
+            member.deleteSchedule(beforeSchedule);
+        }
+        catch (EmptyResultDataAccessException e){
+            throw new ScheduleNotFoundException(e);
+        }
 
         // 바꿀 스케줄 추가
         Schedule afterSchedule = getScheduleFromDto(editScheduleDTO, getDetailSchedulesFromDto(editScheduleDTO.getDetailSchedules()));

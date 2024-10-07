@@ -1,7 +1,6 @@
 package com.project.capstone.schedule.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,9 +14,6 @@ import java.util.List;
 @Setter
 @ToString
 public class EditScheduleRequest {
-
-    @NotNull(message = "스케줄의 id 값은 필수값입니다.")
-    Long id;
 
     @NotBlank(message = "여행 이름은 필수값입니다.")
     String name;

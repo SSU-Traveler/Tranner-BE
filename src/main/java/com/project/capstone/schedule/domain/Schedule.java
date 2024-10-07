@@ -48,8 +48,7 @@ public class Schedule {
     private LocalDate endDate;
 
     // === 일자별 스케줄 === //
-    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
-    @Setter(value = AccessLevel.NONE)
+    @OneToMany(mappedBy = "schedule", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetailSchedule> detailSchedules = new ArrayList<>();
 
     public Optional<DetailSchedule> getDetailSchedule(DetailSchedule detailSchedule){

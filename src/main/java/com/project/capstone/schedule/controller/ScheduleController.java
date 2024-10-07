@@ -11,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -53,10 +50,12 @@ public class ScheduleController {
         String token = tokenStr.split(" ")[1];
         String username = jwtUtil.getUsername(token);
 
+        long scheduleId = Long.parseLong(request.getParameter("scheduleId"));
+
         log.info("스케줄 수정 요청을 한 멤버 = {}",username);
         log.info("스케줄 수정 요청을 통해 넘어온 정보 = {}", scheduleRequest);
 
-        scheduleService.editSchedule(username,scheduleRequest);
+        scheduleService.editSchedule(username,scheduleId,scheduleRequest);
 
         List<FindScheduleDTO> allSchedules = scheduleService.findAllSchedules(username);
         log.info("스케줄 변경 이후 {}의 스케줄들 = {}", username, allSchedules);
