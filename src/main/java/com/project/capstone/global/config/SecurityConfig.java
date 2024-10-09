@@ -58,7 +58,8 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/login", "/member/register", "/main").permitAll()
+                        .requestMatchers("/login", "/member/register","/member/emails/verification-requests", "/member/emails/verifications","/member/findid"
+                        ,"/member/findpw/emails","/member/findpw/verify","/member/findpw/change", "/main").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
@@ -71,6 +72,7 @@ public class SecurityConfig {
         http
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
 
         return http.build();
     }

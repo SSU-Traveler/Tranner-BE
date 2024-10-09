@@ -33,6 +33,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	implementation 'com.mysql:mysql-connector-j'
+	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '3.0.5'
  // 최신 버전을 사용하세요
 
 	annotationProcessor 'org.projectlombok:lombok'
