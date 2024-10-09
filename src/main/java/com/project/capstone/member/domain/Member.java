@@ -2,6 +2,7 @@ package com.project.capstone.member.domain;
 
 import com.project.capstone.bookmark.domain.Bookmark;
 import com.project.capstone.candidateLocation.domain.CandidateLocation;
+import com.project.capstone.schedule.domain.DetailSchedule;
 import com.project.capstone.schedule.domain.Schedule;
 import jakarta.persistence.*;
 import lombok.*;
@@ -95,7 +96,7 @@ public class Member {
     }
 
     // === 여행 리스트 === //
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Schedule> schedules = new ArrayList<>();
 
     public Optional<Schedule> getSchedule(Schedule schedule){
@@ -112,6 +113,14 @@ public class Member {
         // 무한 루프에 빠지지 않도록 체크
         if(schedule.getMember()!=this){
             schedule.saveMember(this);
+        }
+
+        // 스케줄안에 일자별 스케줄들이 있으면
+        List<DetailSchedule> detailSchedules = new ArrayList<>(schedule.getDetailSchedules());
+        if(!schedule.getDetailSchedules().isEmpty()){
+            for (DetailSchedule detailSchedule : detailSchedules) {
+                schedule.addDetailSchedule(detailSchedule);
+            }
         }
     }
 

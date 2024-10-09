@@ -17,7 +17,7 @@ import java.util.Optional;
 public class Schedule {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "schedule_id",updatable = false)
     private Long id;
 
@@ -36,16 +36,8 @@ public class Schedule {
     @Column(name = "schedule_name", nullable = false)
     private String name;
 
-    public void editName(String name4newSchedule) {
-        this.name=name4newSchedule;
-    }
-
     @Column(name = "how_many_people", nullable = false)
     private Integer howManyPeople;
-
-    public void editHowManyPeople(Integer howManyPeople4newSchedule) {
-        this.howManyPeople=howManyPeople4newSchedule;
-    }
 
     @Temporal(TemporalType.DATE)
     @Column(name = "start_date", nullable = false)
@@ -55,14 +47,8 @@ public class Schedule {
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
-    public void editDate(LocalDate startDate4newSchedule, LocalDate endDate4newSchedule) {
-        this.startDate = startDate4newSchedule;
-        this.endDate = endDate4newSchedule;
-    }
-
     // === 일자별 스케줄 === //
-    @OneToMany(mappedBy = "schedule", cascade = CascadeType.PERSIST)
-    @Setter(value = AccessLevel.NONE)
+    @OneToMany(mappedBy = "schedule", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetailSchedule> detailSchedules = new ArrayList<>();
 
     public Optional<DetailSchedule> getDetailSchedule(DetailSchedule detailSchedule){
@@ -82,26 +68,14 @@ public class Schedule {
         }
     }
 
-//    // 두 스케줄의 순서를 변경 (날짜랑 장소 순서 모두 swap)
-//    public void swapDetailSchedule(DetailSchedule scheduleToSwapFirst, DetailSchedule scheduleToSwapSecond){
-//        // 두 스케줄의 날짜 순서를 변경
-//        Integer tmp1 = scheduleToSwapFirst.getDaySequence();
-//        scheduleToSwapFirst.editDaySequence(scheduleToSwapSecond.getDaySequence());
-//        scheduleToSwapSecond.editDaySequence(tmp1);
-//
-//        // 두 스케줄의 장소 순서를 변경
-//        Integer tmp2 = scheduleToSwapFirst.getLocationSequence();
-//        scheduleToSwapFirst.editLocationSequence(scheduleToSwapSecond.getLocationSequence());
-//        scheduleToSwapSecond.editLocationSequence(tmp2);
-//
-//    }
-
     @Builder
-    public Schedule(String name, Integer how_many_people,LocalDate startDate, LocalDate endDate) {
+    public Schedule(String name, Integer howManyPeople, LocalDate startDate, LocalDate endDate, List<DetailSchedule> detailSchedules) {
         this.name = name;
-        this.howManyPeople = how_many_people;
+        this.howManyPeople = howManyPeople;
         this.startDate = startDate;
         this.endDate = endDate;
+
+        this.detailSchedules = detailSchedules;
     }
 
     /**

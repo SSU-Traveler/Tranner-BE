@@ -1,5 +1,6 @@
 package com.project.capstone.global.config;
 
+import com.project.capstone.candidateLocation.repository.CandidateLocationRepository;
 import com.project.capstone.global.jwt.JwtFilter;
 import com.project.capstone.global.jwt.JwtUtil;
 import com.project.capstone.global.jwt.LoginFilter;
@@ -20,11 +21,13 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtUtil jwtUtil;
+    private final CandidateLocationRepository candidateLocationRepository;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil, CandidateLocationRepository candidateLocationRepository) {
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
+        this.candidateLocationRepository = candidateLocationRepository;
     }
 
 
@@ -56,14 +59,14 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/login", "/member/register","/member/emails/verification-requests", "/member/emails/verifications","/member/findid"
-                        ,"/member/findpw/emails","/member/findpw/verify","/member/findpw/change").permitAll()
+                        ,"/member/findpw/emails","/member/findpw/verify","/member/findpw/change", "/main").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
         http
                 .addFilterBefore(new JwtFilter(jwtUtil), LoginFilter.class);
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, candidateLocationRepository), UsernamePasswordAuthenticationFilter.class);
 
         //세션 설정
         http

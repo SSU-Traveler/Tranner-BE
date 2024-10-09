@@ -1,18 +1,31 @@
 package com.project.capstone.member.controller;
 
+import com.project.capstone.global.jwt.JwtUtil;
 import com.project.capstone.member.dto.request.MemberLoginRequest;
 import com.project.capstone.member.dto.request.MemberRegisterRequest;
 //import com.project.capstone.member.service.MemberService;
+
 import com.project.capstone.member.dto.response.EmailVerificationResult;
 import com.project.capstone.member.service.MemberService;
 import jakarta.servlet.http.HttpSession;
+import com.project.capstone.member.dto.response.MainpageResponse;
+import com.project.capstone.member.dto.response.MemberResponse;
+import com.project.capstone.member.dto.response.MypageResponse;
+import com.project.capstone.member.service.MemberService;
+import com.project.capstone.schedule.dto.response.CandidateLocationResponse;
+import jakarta.servlet.http.HttpServletRequest;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.parameters.P;
+
+import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -21,9 +34,12 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+
+@Slf4j
 @RequestMapping("/member")
 public class MemberController {
     private final MemberService memberService;
+    private final JwtUtil jwtUtil;
 
     //회원가입
     @PostMapping("/register")
@@ -33,9 +49,15 @@ public class MemberController {
         return ResponseEntity.ok("회원가입에 성공하였습니다.");
     }
 
-    @PostMapping("/admin")
-    public String admin() {
-        return "jwt 검증 완료";
+    // 마이페이지
+    @GetMapping("/mypage")
+    public ResponseEntity<MypageResponse> mypage(HttpServletRequest request) {
+        String tokenStr = request.getHeader("Authorization"); // jwt토큰에서 사용자 정보 추출
+        String token = tokenStr.split(" ")[1];
+        String username = jwtUtil.getUsername(token);
+        log.info("마이페이지를 요청한 username은 = {}", username);
+        MypageResponse mypageResponse = memberService.getMyPage(username);
+        return ResponseEntity.ok().body(mypageResponse);
     }
 
     //이메일 보내기
