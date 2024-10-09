@@ -4,8 +4,11 @@ import com.project.capstone.global.jwt.JwtUtil;
 import com.project.capstone.member.dto.request.MemberLoginRequest;
 import com.project.capstone.member.dto.request.MemberRegisterRequest;
 //import com.project.capstone.member.service.MemberService;
+import com.project.capstone.member.dto.response.MainpageResponse;
+import com.project.capstone.member.dto.response.MemberResponse;
 import com.project.capstone.member.dto.response.MypageResponse;
 import com.project.capstone.member.service.MemberService;
+import com.project.capstone.schedule.dto.response.CandidateLocationResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,9 +30,10 @@ public class MemberController {
         return ResponseEntity.ok("회원가입에 성공하였습니다.");
     }
 
+    // 마이페이지
     @GetMapping("/mypage")
     public ResponseEntity<MypageResponse> mypage(HttpServletRequest request) {
-        String tokenStr = request.getHeader("Authorization");
+        String tokenStr = request.getHeader("Authorization"); // jwt토큰에서 사용자 정보 추출
         String token = tokenStr.split(" ")[1];
         String username = jwtUtil.getUsername(token);
         log.info("마이페이지를 요청한 username은 = {}", username);
@@ -37,4 +41,5 @@ public class MemberController {
 
         return ResponseEntity.ok().body(mypageResponse);
     }
+
 }
