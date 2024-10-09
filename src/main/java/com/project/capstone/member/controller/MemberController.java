@@ -34,8 +34,6 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-
-@Slf4j
 @RequestMapping("/member")
 public class MemberController {
     private final MemberService memberService;
