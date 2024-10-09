@@ -1,10 +1,13 @@
 package com.project.capstone.schedule.controller;
 
 import com.project.capstone.global.jwt.JwtUtil;
+import com.project.capstone.member.service.CustomMemberDetailService;
 import com.project.capstone.schedule.domain.Schedule;
 import com.project.capstone.schedule.dto.request.AddScheduleRequest;
 import com.project.capstone.schedule.dto.request.EditScheduleRequest;
+import com.project.capstone.schedule.dto.request.GetAddSchedule;
 import com.project.capstone.schedule.dto.response.FindScheduleDTO;
+import com.project.capstone.schedule.dto.response.ListScheduleResponse;
 import com.project.capstone.schedule.service.ScheduleService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,7 @@ public class ScheduleController {
     private final CustomMemberDetailService customMemberDetailService;
     private final JwtUtil jwtUtil;
 
+    //스케줄 생성 페이지
     @GetMapping("/add")
     public ResponseEntity<ListScheduleResponse> CreateSchedule(HttpServletRequest request, @RequestBody GetAddSchedule locations) {
         String tokenStr = request.getHeader("Authorization");
@@ -34,9 +38,6 @@ public class ScheduleController {
         return ResponseEntity.ok().body(listScheduleResponse);
     }
 
-
-    private final JwtUtil jwtUtil;
-    private final ScheduleService scheduleService;
 
     // 신규 스케줄 생성
     @PostMapping("/add")

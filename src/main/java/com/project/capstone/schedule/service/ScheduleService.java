@@ -116,6 +116,7 @@ public class ScheduleService {
                 .collect(Collectors.toList());
     }
 
+    // 여행 계획 생성 페이지 첫 부분 들어왔을 때
     @Transactional
     public ListScheduleResponse AddCandidateLocation(GetAddSchedule request, String username) {
         Member member = memberRepository.findByUsername(username); // 여행 계획을 짤 멤버 정보
