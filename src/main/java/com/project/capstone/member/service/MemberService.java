@@ -53,10 +53,14 @@ public class MemberService {
     private final MailService mailService;
 
     public void register(MemberRegisterRequest request) {
+
         if (memberRepository.existsByUsername(request.username())) {
             throw new BusinessLogicException(ExceptionCode.USERID_EXISTS);
         }
 
+        if (memberRepository.existsByEmail(request.memberEmail())) {
+            throw new BusinessLogicException(ExceptionCode. MEMBER_EMAIL_EXISTS);
+        }
         Member member = Member.builder()
                 .username(request.username())
                 .password(bCryptPasswordEncoder.encode(request.password())) //비밀번호는 암호화하여 저장
