@@ -1,6 +1,5 @@
 package com.project.capstone.schedule.domain;
 
-import com.project.capstone.detailSchedule.domain.DetailSchedule;
 import com.project.capstone.member.domain.Member;
 import jakarta.persistence.*;
 import lombok.*;

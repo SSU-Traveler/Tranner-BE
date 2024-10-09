@@ -3,7 +3,23 @@ spring:
     import: optional:application-secret.properties
   application:
     name: capstone
-  jwt :
+  jwt:
     secret: ${JWT_SECRETKEY}
   profiles:
     active: db
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: alsdn5737@gmail.com
+    password: wrll hejc efxj cyqk
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
