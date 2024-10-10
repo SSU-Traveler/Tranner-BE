@@ -68,12 +68,12 @@ public class MemberController {
     }
 
     @GetMapping
-    public ResponseEntity<MemberEditPageResponse> edit(HttpServletRequest request){
+    public ResponseEntity<MemberEditPageResponse> edit(HttpServletRequest request) {
         String tokenStr = request.getHeader("Authorization");
         String token = tokenStr.split(" ")[1];
         String username = jwtUtil.getUsername(token);
 
-        log.info("마이페이지에서 프로필 수정 페이지를 요청한 username은 = {}",username);
+        log.info("마이페이지에서 프로필 수정 페이지를 요청한 username은 = {}", username);
 
         MemberEditPageResponse memberEditPageResponse = memberService.getMemberEditPage(username);
 
@@ -82,7 +82,7 @@ public class MemberController {
 
     @PatchMapping
     public ResponseEntity<Void> edit(HttpServletRequest request,
-                       @Validated @RequestBody MemberEditRequest memberEditRequest) {
+                                     @Validated @RequestBody MemberEditRequest memberEditRequest) {
 
         String tokenStr = request.getHeader("Authorization");
         String token = tokenStr.split(" ")[1];
@@ -98,7 +98,7 @@ public class MemberController {
                 .build();
     }
 
-  //이메일 보내기
+    //이메일 보내기
     @PostMapping("/emails/verification-requests")
     public ResponseEntity<Void> sendMessage(@RequestParam("email") @Valid @Email String email) {
         memberService.sendCodeToEmail(email);
@@ -113,43 +113,45 @@ public class MemberController {
         EmailVerificationResult response = memberService.verificationCode(email, authCode);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
     //아이디 찾기
     @PostMapping("/findid")
-    public ResponseEntity<Map<String,String>> findid(@Valid @RequestBody Map<String , String >request)
-    {
+    public ResponseEntity<Map<String, String>> findid(@Valid @RequestBody Map<String, String> request) {
         String email = request.get("email");
-        log.info("이메일 요청: {} " , email);
+        log.info("이메일 요청: {} ", email);
 
         String username = memberService.findUsernameByEmail(email);
-        log.info("이메일 요청한 사용자: {} " , username);
-        Map<String , String > response = new HashMap<>();
+        log.info("이메일 요청한 사용자: {} ", username);
+        Map<String, String> response = new HashMap<>();
         response.put("username", username);
 
-            return ResponseEntity.ok(response);
-        }
-        //비밀번호 찾기(이메일 인증 후 비밀번호 찾기 가능)
+        return ResponseEntity.ok(response);
+    }
+
+    //비밀번호 찾기(이메일 인증 후 비밀번호 찾기 가능)
     @PostMapping("/findpw/emails")
-    public ResponseEntity<String> sendResetPasswordEmail(@RequestBody Map<String,String>request , HttpSession session) {
+    public ResponseEntity<String> sendResetPasswordEmail(@RequestBody Map<String, String> request, HttpSession session) {
         String email = request.get("email");
         memberService.sendCodeToEmail(email);
         session.setAttribute("email", email);
-        log.info("세션email:{}",session.getAttribute("email"));
+        log.info("세션email:{}", session.getAttribute("email"));
         return ResponseEntity.ok("비밀번호 재설정 이메일 인증코드를 보냈습니다.");
     }
+
     //이메일 인증코드 확인 후 비밀번호 변경페이지로 리다이렉트
     @PostMapping("/findpw/verify")
-    public ResponseEntity<String> verifyCodeForPasswordRest (
-            @RequestBody Map<String,String>request, HttpSession session) {
+    public ResponseEntity<String> verifyCodeForPasswordRest(
+            @RequestBody Map<String, String> request, HttpSession session) {
 
-        String email = (String)session.getAttribute("email");
-        log.info("세션email2:{}",email);
+        String email = (String) session.getAttribute("email");
+        log.info("세션email2:{}", email);
         String code = request.get("code");
 
         EmailVerificationResult result = memberService.verificationCode(email, code);
-        if(result.isVerified()){
+        if (result.isVerified()) {
             return ResponseEntity.ok("인증이 완료되었습니다. 비밀번호 페이지로 이동합니다.");
 
-        }else {
+        } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증코드가 유효하지 않습니다.");
         }
     }
@@ -157,9 +159,9 @@ public class MemberController {
     //비밀번호 변경
     @PostMapping("findpw/change")
     public ResponseEntity<String> changePassword(
-            @RequestBody Map<String,String>request , HttpSession session) {
+            @RequestBody Map<String, String> request, HttpSession session) {
         String newPassword = request.get("newPassword");
-        String email = (String)session.getAttribute("email");
+        String email = (String) session.getAttribute("email");
 
         if (!isValidPassword(newPassword)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("비밀번호는 영문, 숫자, 특수문자를 포함한 8자 이상이어야 합니다.");
@@ -171,9 +173,8 @@ public class MemberController {
     }
 
 
-
-
     // 비밀번호 조건 체크 (영문, 숫자, 특수문자 포함 8자리 이상)
     private boolean isValidPassword(String password) {
         return password.matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z\\d])[A-Za-z\\d[^A-Za-z\\d]]{8,}$");
     }
+}
