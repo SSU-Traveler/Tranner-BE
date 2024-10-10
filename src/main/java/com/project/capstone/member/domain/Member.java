@@ -2,9 +2,11 @@ package com.project.capstone.member.domain;
 
 import com.project.capstone.bookmark.domain.Bookmark;
 import com.project.capstone.candidateLocation.domain.CandidateLocation;
+import com.project.capstone.schedule.domain.DetailSchedule;
 import com.project.capstone.schedule.domain.Schedule;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -36,6 +38,11 @@ public class Member {
     // 닉네임 변경 메소드 (Setter를 넣으면, 무결성에 문제가 생길 수 있어, Setter 없앰...)
     public void changeNickname(String nickname) {
         this.nickname=nickname;
+    }
+
+    //비밀번호 변경 메서드(김민우 추가)
+    public void changePassword(String newPassword, BCryptPasswordEncoder encoder) {
+        this.password = encoder.encode(newPassword); // 비밀번호 암호화 후 설정
     }
 
     @Column(name = "email", nullable = false)
@@ -89,7 +96,7 @@ public class Member {
     }
 
     // === 여행 리스트 === //
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Schedule> schedules = new ArrayList<>();
 
     public Optional<Schedule> getSchedule(Schedule schedule){
@@ -107,10 +114,24 @@ public class Member {
         if(schedule.getMember()!=this){
             schedule.saveMember(this);
         }
+
+        // 스케줄안에 일자별 스케줄들이 있으면
+        List<DetailSchedule> detailSchedules = new ArrayList<>(schedule.getDetailSchedules());
+        if(!schedule.getDetailSchedules().isEmpty()){
+            for (DetailSchedule detailSchedule : detailSchedules) {
+                schedule.addDetailSchedule(detailSchedule);
+            }
+        }
     }
 
     public void deleteSchedule(Schedule schedule) {
-        this.schedules.remove(schedule);
+        if(this.schedules.contains(schedule)){
+            this.schedules.remove(schedule);
+            return;
+        }
+        if(schedule.getMember() == this){
+            schedule.deleteThisSchedule();
+        }
     }
 
     @Builder

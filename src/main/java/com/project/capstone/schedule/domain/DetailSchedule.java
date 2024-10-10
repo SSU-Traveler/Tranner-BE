@@ -1,6 +1,5 @@
-package com.project.capstone.detailSchedule.domain;
+package com.project.capstone.schedule.domain;
 
-import com.project.capstone.schedule.domain.Schedule;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +11,7 @@ import lombok.*;
 public class DetailSchedule {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "detail_schedule_id",updatable = false)
     private Long id;
 
@@ -31,33 +30,17 @@ public class DetailSchedule {
     @Column(name = "day_sequence", nullable = false)
     private Integer daySequence;
 
-//    public void editDaySequence(Integer daySequence){
-//        this.daySequence = daySequence;
-//    }
-
     @Column(name = "location_sequence", nullable = false)
     private Integer locationSequence;
-
-//    public void editLocationSequence(Integer locationSequence){
-//        this.locationSequence = locationSequence;
-//    }
 
     @Column(name = "location_name", nullable = false)
     private String locationName;
 
-    /**
-     *  생성자에 PK , FK 포함하면 안됨
-     */
-    /**
-     *
-     * @param day_sequence 여행 일차
-     * @param location_sequence 그 일차에서 여행지 순서
-     * @param location_name 그 여행지 이름
-     */
-    public DetailSchedule(Integer day_sequence, Integer location_sequence, String location_name) {
-        this.daySequence = day_sequence;
-        this.locationSequence = location_sequence;
-        this.locationName = location_name;
+    @Builder
+    public DetailSchedule(Integer daySequence, Integer locationSequence, String locationName) {
+        this.daySequence = daySequence;
+        this.locationSequence = locationSequence;
+        this.locationName = locationName;
     }
 
     /**

@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 //@SpringBootTest
 //@Transactional
-// @Rollback(value = false
+//@Rollback(value = false)
 class MemberRepositoryTest {
 
     @Autowired
