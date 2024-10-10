@@ -1,9 +1,11 @@
 package com.project.capstone.member.controller;
 
 import com.project.capstone.global.jwt.JwtUtil;
+import com.project.capstone.member.dto.request.MemberEditRequest;
 import com.project.capstone.member.dto.request.MemberLoginRequest;
 import com.project.capstone.member.dto.request.MemberRegisterRequest;
 //import com.project.capstone.member.service.MemberService;
+import com.project.capstone.member.dto.response.MemberEditPageResponse;
 
 import com.project.capstone.member.dto.response.EmailVerificationResult;
 import com.project.capstone.member.service.MemberService;
@@ -19,6 +21,13 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,7 +67,38 @@ public class MemberController {
         return ResponseEntity.ok().body(mypageResponse);
     }
 
-    //이메일 보내기
+    @GetMapping
+    public ResponseEntity<MemberEditPageResponse> edit(HttpServletRequest request){
+        String tokenStr = request.getHeader("Authorization");
+        String token = tokenStr.split(" ")[1];
+        String username = jwtUtil.getUsername(token);
+
+        log.info("마이페이지에서 프로필 수정 페이지를 요청한 username은 = {}",username);
+
+        MemberEditPageResponse memberEditPageResponse = memberService.getMemberEditPage(username);
+
+        return ResponseEntity.ok().body(memberEditPageResponse);
+    }
+
+    @PatchMapping
+    public ResponseEntity<Void> edit(HttpServletRequest request,
+                       @Validated @RequestBody MemberEditRequest memberEditRequest) {
+
+        String tokenStr = request.getHeader("Authorization");
+        String token = tokenStr.split(" ")[1];
+        String username = jwtUtil.getUsername(token);
+
+        log.info("마이페이지에서 프로플 수정을 요청한 username은 = {}", username);
+
+        memberService.editMember(username, memberEditRequest);
+
+
+        return ResponseEntity.status(HttpStatus.FOUND) // 302 리다이렉션
+                .location(URI.create("/member")) // 리다이렉트할 URL
+                .build();
+    }
+
+  //이메일 보내기
     @PostMapping("/emails/verification-requests")
     public ResponseEntity<Void> sendMessage(@RequestParam("email") @Valid @Email String email) {
         memberService.sendCodeToEmail(email);
@@ -137,6 +177,3 @@ public class MemberController {
     private boolean isValidPassword(String password) {
         return password.matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z\\d])[A-Za-z\\d[^A-Za-z\\d]]{8,}$");
     }
-
-
-}

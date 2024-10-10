@@ -38,7 +38,6 @@ public class ScheduleController {
         return ResponseEntity.ok().body(listScheduleResponse);
     }
 
-
     // 신규 스케줄 생성
     @PostMapping("/add")
     public ResponseEntity<String> addSchedule(HttpServletRequest request,

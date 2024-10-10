@@ -3,8 +3,6 @@ package com.project.capstone.schedule.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
-
 @Entity
 @Table(name = "detail_schedules")
 @Getter
