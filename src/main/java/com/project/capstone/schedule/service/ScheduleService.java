@@ -81,6 +81,10 @@ public class ScheduleService {
         try{
             Schedule beforeSchedule = scheduleRepository.findById(scheduleId).get();
             beforeSchedule.deleteThisSchedule();
+            log.info("beforeSchedule = {}",beforeSchedule);
+
+//            scheduleRepository.deleteById(scheduleId);
+            member.deleteSchedule(beforeSchedule);
         }
         catch (EmptyResultDataAccessException e){
             throw new ScheduleNotFoundException(e);
@@ -113,6 +117,7 @@ public class ScheduleService {
                 .collect(Collectors.toList());
     }
 
+    // 여행 계획 생성 페이지 첫 부분 들어왔을 때
     @Transactional
     public ListScheduleResponse AddCandidateLocation(GetAddSchedule request, String username) {
         Member member = memberRepository.findByUsername(username); // 여행 계획을 짤 멤버 정보

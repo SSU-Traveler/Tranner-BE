@@ -3,6 +3,7 @@ package com.project.capstone.detailSchedule.repository;
 import com.project.capstone.schedule.domain.DetailSchedule;
 import com.project.capstone.member.domain.Member;
 import com.project.capstone.member.repository.MemberRepository;
+import com.project.capstone.schedule.repository.DetailScheduleRepository;
 import com.project.capstone.schedule.domain.Schedule;
 import com.project.capstone.schedule.repository.DetailScheduleRepository;
 import com.project.capstone.schedule.repository.ScheduleRepository;
