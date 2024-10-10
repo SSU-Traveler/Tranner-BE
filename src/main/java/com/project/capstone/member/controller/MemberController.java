@@ -1,18 +1,12 @@
 package com.project.capstone.member.controller;
 
 import com.project.capstone.global.jwt.JwtUtil;
-import com.project.capstone.member.dto.request.MemberLoginRequest;
 import com.project.capstone.member.dto.request.MemberRegisterRequest;
-//import com.project.capstone.member.service.MemberService;
 
 import com.project.capstone.member.dto.response.EmailVerificationResult;
 import com.project.capstone.member.service.MemberService;
 import jakarta.servlet.http.HttpSession;
-import com.project.capstone.member.dto.response.MainpageResponse;
-import com.project.capstone.member.dto.response.MemberResponse;
 import com.project.capstone.member.dto.response.MypageResponse;
-import com.project.capstone.member.service.MemberService;
-import com.project.capstone.schedule.dto.response.CandidateLocationResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
 import jakarta.validation.Valid;
@@ -22,9 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 
-import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
 
