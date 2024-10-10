@@ -80,6 +80,7 @@ public class ScheduleService {
         // 기존 스케줄 삭제
         try{
             Schedule beforeSchedule = scheduleRepository.findById(scheduleId).get();
+            beforeSchedule.deleteThisSchedule();
             log.info("beforeSchedule = {}",beforeSchedule);
 
 //            scheduleRepository.deleteById(scheduleId);
