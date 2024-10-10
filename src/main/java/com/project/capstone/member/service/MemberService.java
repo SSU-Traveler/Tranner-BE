@@ -10,8 +10,10 @@ import com.project.capstone.bookmark.repository.BookmarkRepository;
 import com.project.capstone.candidateLocation.domain.CandidateLocation;
 import com.project.capstone.candidateLocation.repository.CandidateLocationRepository;
 import com.project.capstone.member.domain.Member;
+import com.project.capstone.member.dto.request.MemberEditRequest;
 import com.project.capstone.member.dto.request.MemberRegisterRequest;
 //import com.project.capstone.member.repository.MemberRepository;
+import com.project.capstone.member.dto.response.MemberEditPageResponse;
 import com.project.capstone.member.dto.response.MainpageResponse;
 import com.project.capstone.member.dto.response.MypageResponse;
 import com.project.capstone.member.repository.MemberRepository;
@@ -90,6 +92,25 @@ public class MemberService {
     }
 
     @Transactional
+    public MemberEditPageResponse getMemberEditPage(String username){
+        Member member = memberRepository.findByUsername(username);
+
+        MemberEditPageResponse ret=new MemberEditPageResponse(member.getNickname(),member.getEmail());
+
+        return ret;
+    }
+
+    @Transactional
+    public boolean editMember(String username,
+                              MemberEditRequest memberEditRequest) {
+
+        Member member = memberRepository.findByUsername(username);
+
+        member.changeNickname(memberEditRequest.getNickname());
+
+        return true;
+    }
+
     // 사용자의 장바구니 정보를 추출
     public MainpageResponse getCandidateLocations(String username){
         Member member = memberRepository.findByUsername(username);
@@ -159,5 +180,4 @@ public class MemberService {
         // 변경된 비밀번호 저장
         memberRepository.save(member2);
     }
-
 }
