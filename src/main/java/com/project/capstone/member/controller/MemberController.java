@@ -36,6 +36,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,10 +51,10 @@ public class MemberController {
 
     //회원가입
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody MemberRegisterRequest request) {
+    public RedirectView register(@Valid @RequestBody MemberRegisterRequest request) {
         memberService.register(request);
 
-        return ResponseEntity.ok("회원가입에 성공하였습니다.");
+        return new RedirectView("/login");
     }
 
     // 마이페이지
