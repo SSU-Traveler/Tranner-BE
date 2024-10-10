@@ -34,3 +34,23 @@
    ```
 ### 241007 수정 내용
 1. schedule.controller의 editSchedule()에서, 쿼리파라미터를 사용하는 방식으로 변경함.
+
+### 241010 수정 내용
+1. member 프로필 수정을 위한 dto MemberEditRequest, MemberEditPageRequest 생성
+2. member 프로필 수정 페이지를 위한 controller MemberController에 edit() 추가
+   ```
+   @GetMapping
+    public ResponseEntity<MemberEditPageResponse> edit(HttpServletRequest request)
+   ```
+3. member 프로필 수정을 위한 controller MemberController에 edit() 추가
+   ```
+   @PatchMapping
+    public ResponseEntity<Void> edit(HttpServletRequest request,
+                       @Validated @RequestBody MemberEditRequest memberEditRequest)
+   ```
+4. member 프로필 수정을 위한 MemberService에 editMember() 추가
+   ```
+   @Transactional
+    public boolean editMember(String username,
+                              MemberEditRequest memberEditRequest)
+   ```

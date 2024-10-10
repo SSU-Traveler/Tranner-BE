@@ -119,7 +119,13 @@ public class Member {
     }
 
     public void deleteSchedule(Schedule schedule) {
-        this.schedules.remove(schedule);
+        if(this.schedules.contains(schedule)){
+            this.schedules.remove(schedule);
+            return;
+        }
+        if(schedule.getMember() == this){
+            schedule.deleteThisSchedule();
+        }
     }
 
     @Builder

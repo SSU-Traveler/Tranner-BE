@@ -3,8 +3,10 @@ package com.project.capstone.member.service;
 import com.project.capstone.bookmark.domain.Bookmark;
 import com.project.capstone.bookmark.repository.BookmarkRepository;
 import com.project.capstone.member.domain.Member;
+import com.project.capstone.member.dto.request.MemberEditRequest;
 import com.project.capstone.member.dto.request.MemberRegisterRequest;
 //import com.project.capstone.member.repository.MemberRepository;
+import com.project.capstone.member.dto.response.MemberEditPageResponse;
 import com.project.capstone.member.dto.response.MypageResponse;
 import com.project.capstone.member.repository.MemberRepository;
 import com.project.capstone.schedule.domain.Schedule;
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -62,4 +65,23 @@ public class MemberService {
         return mypageResponse;
     }
 
+    @Transactional
+    public MemberEditPageResponse getMemberEditPage(String username){
+        Member member = memberRepository.findByUsername(username);
+
+        MemberEditPageResponse ret=new MemberEditPageResponse(member.getNickname(),member.getEmail());
+
+        return ret;
+    }
+
+    @Transactional
+    public boolean editMember(String username,
+                              MemberEditRequest memberEditRequest) {
+
+        Member member = memberRepository.findByUsername(username);
+
+        member.changeNickname(memberEditRequest.getNickname());
+
+        return true;
+    }
 }

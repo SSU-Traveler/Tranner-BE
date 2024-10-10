@@ -3,6 +3,7 @@ package com.project.capstone.schedule.domain;
 import com.project.capstone.member.domain.Member;
 import jakarta.persistence.*;
 import lombok.*;
+import org.apache.ibatis.jdbc.Null;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -24,6 +25,12 @@ public class Schedule {
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false) // MEMBER table의 PK(MEMBER_PK)를 참조한다는 뜻
     private Member member;
+
+    // this.member를 삭제하는 메소드인데, 사실상 이 스케줄을 삭제하는 메소드이다.
+    public void deleteThisSchedule(){
+        member.deleteSchedule(this);
+        this.member=null;
+    }
 
     public void saveMember(Member member){
         this.member=member;
