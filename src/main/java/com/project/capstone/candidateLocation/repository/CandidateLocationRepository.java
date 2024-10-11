@@ -9,4 +9,7 @@ import java.util.List;
 
 public interface CandidateLocationRepository extends JpaRepository<CandidateLocation, Long> {
     List<CandidateLocation> findAllByMemberId(Long member_id);
+
+
+    List<CandidateLocation> findByUsername(String username);
 }

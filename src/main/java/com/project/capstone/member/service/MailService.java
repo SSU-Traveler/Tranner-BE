@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Transactional
 @RequiredArgsConstructor
+//이메일을 보내기 위한 서비스로직
 public class MailService {
     private final JavaMailSender emailSender;
 
