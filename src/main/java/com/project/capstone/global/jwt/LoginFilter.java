@@ -71,7 +71,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String token = jwtUtil.createJwt(username, role, 60 * 60 * 24 * 365 * 100L);
 
         response.addHeader("Authorization", "Bearer " + token);
-        List<CandidateLocation> list = locationRepository.findAll();
+        List<CandidateLocation> list = locationRepository.findAllByUsername(username);
         List<CandidateLocationResponse> candidateLocationList = list.stream().map(CandidateLocationResponse::of).toList();
         LoginResponse loginResponse = new LoginResponse(candidateLocationList);
 
