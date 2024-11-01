@@ -92,12 +92,14 @@ public class MemberController {
 
     //이메일 인증코드 확인
     @GetMapping("/emails/verifications")
-    public ResponseEntity<EmailVerificationResult> verificationEmail( @RequestBody Map<String, String> request, HttpSession session) {
+    public ResponseEntity<EmailVerificationResult> verificationEmail( @RequestBody Map<String, String> request) {
 
-        String email = (String) session.getAttribute("email");
-        log.info("세션email2:{}", email);
+        String email = request.get("email");
+        log.info("세션email:{}", email);
 
         String authCode = request.get("authCode");
+        log.info("사용자가 보낸 인증코드 :{}",authCode);
+
         EmailVerificationResult response = memberService.verificationCode(email, authCode);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
