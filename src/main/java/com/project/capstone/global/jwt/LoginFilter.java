@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.capstone.candidateLocation.domain.CandidateLocation;
 import com.project.capstone.candidateLocation.repository.CandidateLocationRepository;
 import com.project.capstone.global.dto.response.LoginResponse;
+import com.project.capstone.global.exception.BusinessLogicException;
+import com.project.capstone.global.exception.ExceptionCode;
 import com.project.capstone.member.dto.response.CustomUserDetails;
 import com.project.capstone.schedule.dto.response.CandidateLocationResponse;
 import jakarta.servlet.FilterChain;
@@ -71,7 +73,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String token = jwtUtil.createJwt(username, role, 60 * 60 * 24 * 365 * 100L);
 
         response.addHeader("Authorization", "Bearer " + token);
-        List<CandidateLocation> list = locationRepository.findAll();
+        List<CandidateLocation> list = locationRepository.findByUsername(username);
         List<CandidateLocationResponse> candidateLocationList = list.stream().map(CandidateLocationResponse::of).toList();
         LoginResponse loginResponse = new LoginResponse(candidateLocationList);
 
@@ -85,6 +87,25 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     // 검증에 실패한 경우
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed){
-        response.setStatus(401);
+        ExceptionCode exceptionCode = ExceptionCode.FAILED_AUTHENTICATION;
+        // 응답 상태 코드와 메시지 설정
+        response.setStatus(exceptionCode.getStatus());
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        try {
+            // JSON 형식으로 오류 메시지 작성
+            String jsonResponse = new ObjectMapper().writeValueAsString(
+                    Map.of(
+                            "status", exceptionCode.getStatus(),
+                            "message", exceptionCode.getMessage()
+                    )
+            );
+
+            // 응답 본문에 JSON 메시지 쓰기
+            response.getWriter().write(jsonResponse);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
