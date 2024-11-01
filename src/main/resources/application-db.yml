@@ -19,5 +19,5 @@ spring:
     open-in-view: false
     show_sql: true
   logging:
-      level:
-        org.hibernate: DEBUG
+    level:
+      org.hibernate: DEBUG

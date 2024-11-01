@@ -11,5 +11,5 @@ public interface CandidateLocationRepository extends JpaRepository<CandidateLoca
     List<CandidateLocation> findAllByMemberId(Long member_id);
 
 
-    List<CandidateLocation> findByUsername(String username);
+    List<CandidateLocation> findByMember_Username(String username);
 }

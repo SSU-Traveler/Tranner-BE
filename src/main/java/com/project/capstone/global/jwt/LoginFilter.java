@@ -1,3 +1,4 @@
+
 package com.project.capstone.global.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,7 +74,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String token = jwtUtil.createJwt(username, role, 60 * 60 * 24 * 365 * 100L);
 
         response.addHeader("Authorization", "Bearer " + token);
-        List<CandidateLocation> list = locationRepository.findByUsername(username);
+        List<CandidateLocation> list = locationRepository.findByMember_Username(username);
         List<CandidateLocationResponse> candidateLocationList = list.stream().map(CandidateLocationResponse::of).toList();
         LoginResponse loginResponse = new LoginResponse(candidateLocationList);
 

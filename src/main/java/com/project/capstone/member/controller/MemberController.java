@@ -23,13 +23,6 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
-
-import org.springframework.http.ResponseEntity;
-
-import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -94,18 +87,25 @@ public class MemberController {
 
     //이메일 보내기
     @PostMapping("/emails/verification-requests")
-    public ResponseEntity<Void> sendMessage(@RequestParam("email") @Valid @Email String email) {
+    public ResponseEntity<String> sendMessage(@Valid @RequestBody Map<String, String>request) {
+        String email = request.get("email");
+        log.info("인증코드 전송할 이메일 : {}" , email);
         memberService.sendCodeToEmail(email);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("이미엘 인증코드가 전송되었습니다.");
     }
 
     //이메일 인증
     @GetMapping("/emails/verifications")
-    public ResponseEntity<EmailVerificationResult> verificationEmail(
-            @RequestParam("email") @Valid @Email String email,
-            @RequestParam("code") String authCode) {
-        EmailVerificationResult response = memberService.verificationCode(email, authCode);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    public ResponseEntity<String> verificationEmail(@RequestBody Map<String, String>request) {
+        String email = request.get("email");
+        String code = request.get("authCode");
+        EmailVerificationResult result = memberService.verificationCode(email, code);
+        if (result.isVerified()) {
+            return ResponseEntity.ok("인증이 완료되었습니다. 비밀번호 페이지로 이동합니다.");
+
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증코드가 유효하지 않습니다.");
+        }
     }
 
     //아이디 찾기
