@@ -86,7 +86,7 @@ public class MemberController {
     //이메일 보내기(프론트에서 회원가입, 아이디 찾기시 이 url사용하기)
     @PostMapping("/emails/verification-requests")
     public ResponseEntity<Void> sendMessage(@RequestBody Map<String,String> request) {
-        memberService.sendCodeToEmail(request.get("email"));
+        memberService.sendCodeToEmailForRegistration(request.get("email"));
         return ResponseEntity.ok().build();
     }
 
@@ -125,7 +125,7 @@ public class MemberController {
     @PostMapping("/findpw/emails")
     public ResponseEntity<String> sendResetPasswordEmail(@RequestBody Map<String, String> request, HttpSession session) {
         String email = request.get("email");
-        memberService.sendCodeToEmail(email);
+        memberService.sendCodeToEmailForPasswordReset(email);
         session.setAttribute("email", email);
         log.info("세션email:{}", session.getAttribute("email"));
         return ResponseEntity.ok("비밀번호 재설정 이메일 인증코드를 보냈습니다.");
@@ -160,3 +160,4 @@ public class MemberController {
 
 
 }
+git
