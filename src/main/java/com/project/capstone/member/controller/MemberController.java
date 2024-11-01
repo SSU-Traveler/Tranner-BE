@@ -114,6 +114,7 @@ public class MemberController {
         String username = memberService.findUsernameByEmail(email);
         log.info("이메일 요청한 사용자: {} ", username);
 
+
         Map<String, String> response = new HashMap<>();
         response.put("username", username);
 
