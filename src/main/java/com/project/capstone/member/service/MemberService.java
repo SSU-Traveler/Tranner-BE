@@ -117,21 +117,34 @@ public class MemberService {
         MainpageResponse mainpageResponse = new MainpageResponse(candidateLocationList);
         return mainpageResponse;
     }
-    //이메일에 인증코드 보내기
-    public void sendCodeToEmail(String email) {
+    //회원가입시 이메일에 인증코드 보내기
+    public void sendCodeToEmailForRegistration(String email) {
 
         //알맞은 이메일 형식이 아닌경우
         if (!isValidEmailFormat(email)) {
             throw new BusinessLogicException(ExceptionCode.INVALID_EMAIL_FORMAT);
         }
 
-        // 이메일이 등록되어 있는지 확인
-        if (!isEmailRegistered(email)) {
+        // 이미 등록된 이메일인지 확인
+        if (isEmailRegistered(email)) {
+            throw new BusinessLogicException(ExceptionCode. MEMBER_EMAIL_EXISTS);
+        }
+        sendVerificationCode(email);
+    }
+
+    //비밀번호 변경시 이메일에 인증코드 보내기
+    public void sendCodeToEmailForPasswordReset(String email) {
+        if (!isValidEmailFormat(email)) {
             throw new BusinessLogicException(ExceptionCode.EMAIL_NOT_REGISTERED);
         }
+        sendVerificationCode(email);
+    }
 
+
+    // 공통으로 인증 코드를 전송하는 메서드
+    private void sendVerificationCode(String email) {
         String code = generateRandomCode(); // 랜덤 코드 생성
-        log.info("인증코드 :{}",code);
+        log.info("인증코드 :{}", code);
         mailService.sendEmail(email, "Trannere 인증코드", "인증 코드: " + code);
 
         // 인증 코드와 만료 시간 저장
@@ -139,11 +152,13 @@ public class MemberService {
         emailVerificationExpirations.put(email, System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5)); // 5분 유효
     }
 
+    //랜덤코드 생성메서드
     private String generateRandomCode() {
         int randomCode = new Random().nextInt(999999); // 0~999999 사이의 난수 생성
         return String.format("%06d", randomCode); // 6자리 문자열로 변환
     }
 
+    //인증코드 확인 메서드
     public EmailVerificationResult verificationCode(String email, String authCode) {
         String storedCode = emailVerificationCodes.get(email);
         Long expirationTime = emailVerificationExpirations.get(email);
