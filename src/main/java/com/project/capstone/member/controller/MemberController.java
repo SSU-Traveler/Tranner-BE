@@ -12,7 +12,6 @@ import com.project.capstone.member.dto.response.MypageResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -39,8 +38,8 @@ public class MemberController {
         return ResponseEntity.ok("회원가입에 성공하였습니다.");
     }
 
-    @GetMapping("/logout")
-    public ResponseEntity<String> logout(HttpSession session) {}
+    //@GetMapping("/logout")
+    //public ResponseEntity<String> logout(HttpSession session) {}
 
     // 마이페이지
     @GetMapping("/mypage")
