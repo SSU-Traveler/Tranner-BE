@@ -10,9 +10,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(Exception.class)  // 모든 예외를 처리할 수 있음
-    public ResponseEntity<String> handleException(Exception ex) {
-        log.error("예외 발생: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    @ExceptionHandler(BusinessLogicException.class)
+    public ResponseEntity<String> handleBusinessLogicException(BusinessLogicException ex) {
+        int statusCode = ex.getStatus(); // ExceptionCode에서 상태 코드 가져오기
+        String message = ex.getMessage(); // ExceptionCode에서 메시지 가져오기
+
+        return ResponseEntity
+                .status(statusCode)
+                .body(message);
     }
 }
