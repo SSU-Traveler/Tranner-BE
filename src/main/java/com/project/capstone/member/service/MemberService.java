@@ -165,6 +165,7 @@ public class MemberService {
         return member.get().getUsername();
 
     }
+
     public void changePassword(String email, String newPassword) {
         Optional<Member> member = memberRepository.findByEmail(email);
         log.info("member객체:{}",member);
