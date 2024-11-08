@@ -3,7 +3,6 @@
 # jdk17 Image Start
 FROM openjdk:17
 
-RUN apt-get update && apt-get install -y default-mysql-client
 
 # 인자 설정 - JAR_File
 ARG JAR_FILE=build/libs/*.jar
