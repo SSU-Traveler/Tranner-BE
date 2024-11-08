@@ -4,6 +4,7 @@ import com.project.capstone.candidateLocation.repository.CandidateLocationReposi
 import com.project.capstone.global.jwt.JwtFilter;
 import com.project.capstone.global.jwt.JwtUtil;
 import com.project.capstone.global.jwt.LoginFilter;
+import com.project.capstone.member.repository.MemberRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,12 +26,14 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtUtil jwtUtil;
     private final CandidateLocationRepository candidateLocationRepository;
+    private final MemberRepository memberRepository;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil, CandidateLocationRepository candidateLocationRepository) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil, CandidateLocationRepository candidateLocationRepository, MemberRepository memberRepository) {
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
         this.candidateLocationRepository = candidateLocationRepository;
+        this.memberRepository = memberRepository;
     }
 
 
@@ -79,7 +82,7 @@ public class SecurityConfig {
         http
                 .addFilterBefore(new JwtFilter(jwtUtil), LoginFilter.class);
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, candidateLocationRepository), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, candidateLocationRepository, memberRepository), UsernamePasswordAuthenticationFilter.class);
 
         //세션 설정
         http

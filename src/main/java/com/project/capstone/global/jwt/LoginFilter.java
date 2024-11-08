@@ -6,7 +6,9 @@ import com.project.capstone.candidateLocation.repository.CandidateLocationReposi
 import com.project.capstone.global.dto.response.LoginResponse;
 import com.project.capstone.global.exception.BusinessLogicException;
 import com.project.capstone.global.exception.ExceptionCode;
+import com.project.capstone.member.domain.Member;
 import com.project.capstone.member.dto.response.CustomUserDetails;
+import com.project.capstone.member.repository.MemberRepository;
 import com.project.capstone.schedule.dto.response.CandidateLocationResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,6 +34,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final CandidateLocationRepository locationRepository;
+    private final MemberRepository memberRepository;
 
 
     @Override
@@ -73,7 +76,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String token = jwtUtil.createJwt(username, role, 60 * 60 * 24 * 365 * 100L);
 
         response.addHeader("Authorization", "Bearer " + token);
-        List<CandidateLocation> list = locationRepository.findByUsername(username);
+        Member member = memberRepository.findByUsername(username);
+        List<CandidateLocation> list = locationRepository.findByMember(member);
         List<CandidateLocationResponse> candidateLocationList = list.stream().map(CandidateLocationResponse::of).toList();
         LoginResponse loginResponse = new LoginResponse(candidateLocationList);
 
