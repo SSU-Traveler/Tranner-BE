@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  app:
+    image: minsokuri/tranner
+    container_name: tranner
+    ports:
+      - "8080:8081"
+    environment:
+      SPRING_DATASOURCE_URL: ${MYSQL_URL}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      JWT_SECRETKEY: ${JWT_SECRETKEY}
+    restart: always
