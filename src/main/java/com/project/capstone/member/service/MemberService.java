@@ -4,6 +4,7 @@ import com.project.capstone.global.exception.BusinessLogicException;
 import com.project.capstone.global.exception.ExceptionCode;
 import com.project.capstone.member.domain.Member;
 import com.project.capstone.member.dto.request.MemberRegisterRequest;
+import com.project.capstone.member.dto.request.UserCheckRequest;
 import com.project.capstone.member.dto.response.EmailVerificationResult;
 import com.project.capstone.bookmark.domain.Bookmark;
 import com.project.capstone.bookmark.repository.BookmarkRepository;
@@ -52,10 +53,6 @@ public class MemberService {
     private final MailService mailService;
 
     public void register(MemberRegisterRequest request) {
-        //이미 등록된 사용자
-        if (memberRepository.existsByUsername(request.username())) {
-            throw new BusinessLogicException(ExceptionCode.USERID_EXISTS);
-        }
         //이미 등록된 이메일
         if (memberRepository.existsByEmail(request.memberEmail())) {
             throw new BusinessLogicException(ExceptionCode. MEMBER_EMAIL_EXISTS);
@@ -69,6 +66,10 @@ public class MemberService {
                 .role("USER") // ADMIN은 관리자만 주도록 설정해야함
                 .build();
         memberRepository.save(member);
+    }
+    public boolean idDuplicatedCheck(UserCheckRequest request) {
+        //중복이 있으면 true 중복이 없으면 false
+        return memberRepository.existsByUsername(request.username());
     }
 
     // 토큰에서 추출한 사용자 정보로 마이페이지에서 조회할 찜 리스트, 스케줄 리스트 반환
