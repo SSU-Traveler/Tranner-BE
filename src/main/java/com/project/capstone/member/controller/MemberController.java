@@ -3,7 +3,6 @@ package com.project.capstone.member.controller;
 import com.project.capstone.global.jwt.JwtUtil;
 import com.project.capstone.member.dto.request.MemberEditRequest;
 import com.project.capstone.member.dto.request.MemberRegisterRequest;
-import com.project.capstone.member.dto.request.UserCheckRequest;
 import com.project.capstone.member.dto.response.MemberEditPageResponse;
 
 import com.project.capstone.member.dto.response.EmailVerificationResult;
@@ -38,41 +37,9 @@ public class MemberController {
         memberService.register(request);
         return ResponseEntity.ok("회원가입에 성공하였습니다.");
     }
-    @GetMapping("/idDuplicatedCheck")
-    public ResponseEntity<String> idDuplicatedCheck(@Valid @RequestBody UserCheckRequest request) {
-        // 중복 여부 체크
-        boolean isAvailable = memberService.idDuplicatedCheck(request);
 
-        if (isAvailable) {
-            // ID가 사용 가능하면
-            return ResponseEntity.ok("이미 사용중인 ID입니다.");
-        }
-        // 중복된 ID일 경우 (isAvailable이 false)
-        return ResponseEntity.status(HttpStatus.CONFLICT).body("사용 가능한 ID입니다.");
-    }
-
-    @GetMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request) {
-        try {
-            String authorization = request.getHeader("Authorization");
-            System.out.println(authorization);
-
-            if (authorization == null || !authorization.startsWith("Bearer ")) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("유효하지 않은 로그아웃 요청입니다.");
-            }
-
-            // 로그아웃 처리 로직 추가 (토큰 삭제나 클라이언트에서의 처리 등)
-            return ResponseEntity.ok("로그아웃에 성공하였습니다.");
-
-        } catch (Exception e) {
-            // 예외가 발생한 경우, 예외의 메시지를 응답 본문에 포함
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("서버 오류가 발생하였습니다: " + e.getMessage());
-        }
-    }
-
-
+    //@GetMapping("/logout")
+    //public ResponseEntity<String> logout(HttpSession session) {}
 
     // 마이페이지
     @GetMapping("/mypage")
@@ -124,7 +91,7 @@ public class MemberController {
     }
 
     //이메일 인증코드 확인
-    @PostMapping("/emails/verifications")
+    @GetMapping("/emails/verifications")
     public ResponseEntity<EmailVerificationResult> verificationEmail( @RequestBody Map<String, String> request) {
 
         String email = request.get("email");
