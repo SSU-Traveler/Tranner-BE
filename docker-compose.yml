@@ -11,4 +11,5 @@ services:
       MYSQL_USERNAME: ${MYSQL_USERNAME}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       JWT_SECRETKEY: ${JWT_SECRETKEY}
+    network_mode: "host"
     restart: always
