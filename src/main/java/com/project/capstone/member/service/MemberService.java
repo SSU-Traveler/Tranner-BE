@@ -76,7 +76,7 @@ public class MemberService {
     public MypageResponse getMyPage(String username){
         Member member = memberRepository.findByUsername(username);
 
-        List<Bookmark> bookmarks = bookmarkRepository.findAllById(member.getId()); // 멤버가 찜한 장소 리스트 반환
+        List<Bookmark> bookmarks = bookmarkRepository.findAllByMemberId(member.getId()); // 멤버가 찜한 장소 리스트 반환
         List<BookmarkResponse> bookmarksList = bookmarks.stream().map(BookmarkResponse::of).toList();
         log.info("마이페이지 내부 북마크 = {}", bookmarksList);
 
@@ -112,12 +112,38 @@ public class MemberService {
     // 사용자의 장바구니 정보를 추출
     public MainpageResponse getCandidateLocations(String username){
         Member member = memberRepository.findByUsername(username);
+        if (member == null) {
+            throw new IllegalArgumentException("해당 사용자를 찾을 수 없습니다: " + username);
+        }
         List<CandidateLocation> candidateLocations = candidateLocationRepository.findAllByMemberId(member.getId());
-        List<CandidateLocationResponse> candidateLocationList = candidateLocations.stream().map(CandidateLocationResponse::of).toList();
+        List<CandidateLocationResponse> candidateLocationList = candidateLocations.stream()
+                .map(CandidateLocationResponse::of)
+                .toList();
         log.info("멤버의 장바구니 정보 = {}", candidateLocationList);
-        MainpageResponse mainpageResponse = new MainpageResponse(candidateLocationList);
-        return mainpageResponse;
+        return new MainpageResponse(candidateLocationList, null);
     }
+
+    // 사용자의 찜 목록 정보를 추출
+    public MainpageResponse getBookmarkLocations(String username) {
+        // 멤버 정보 가져오기
+        Member member = memberRepository.findByUsername(username);
+        if (member == null) {
+            throw new IllegalArgumentException("해당 사용자를 찾을 수 없습니다: " + username);
+        }
+        // 찜 목록 가져오기
+        List<Bookmark> bookmarks = bookmarkRepository.findAllByMemberId(member.getId());
+        List<BookmarkResponse> bookmarkList = bookmarks.stream()
+                .map(BookmarkResponse::of)
+                .toList();
+        log.info("멤버의 찜 목록 정보 = {}", bookmarkList);
+
+        // MainpageResponse 생성 및 반환
+        return new MainpageResponse(null, bookmarkList);
+    }
+
+
+
+    //
     //회원가입시 이메일에 인증코드 보내기
     public void sendCodeToEmailForRegistration(String email) {
 
