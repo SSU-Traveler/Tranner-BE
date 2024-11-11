@@ -2,19 +2,13 @@ package com.project.capstone.member.controller;
 
 import com.project.capstone.global.jwt.JwtUtil;
 import com.project.capstone.member.dto.request.MemberEditRequest;
-import com.project.capstone.member.dto.request.MemberLoginRequest;
 import com.project.capstone.member.dto.request.MemberRegisterRequest;
-//import com.project.capstone.member.service.MemberService;
 import com.project.capstone.member.dto.response.MemberEditPageResponse;
 
 import com.project.capstone.member.dto.response.EmailVerificationResult;
 import com.project.capstone.member.service.MemberService;
 import jakarta.servlet.http.HttpSession;
-import com.project.capstone.member.dto.response.MainpageResponse;
-import com.project.capstone.member.dto.response.MemberResponse;
 import com.project.capstone.member.dto.response.MypageResponse;
-import com.project.capstone.member.service.MemberService;
-import com.project.capstone.schedule.dto.response.CandidateLocationResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
 import jakarta.validation.Valid;
@@ -27,17 +21,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
-
-import org.springframework.http.ResponseEntity;
-
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.view.RedirectView;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,10 +34,10 @@ public class MemberController {
 
     //회원가입
     @PostMapping("/register")
-    public RedirectView register(@Valid @RequestBody MemberRegisterRequest request) {
+    public ResponseEntity<String> register(@Valid @RequestBody MemberRegisterRequest request) {
         memberService.register(request);
 
-        return new RedirectView("/login");
+        return ResponseEntity.ok("회원가입에 성공하였습니다.");
     }
 
     // 마이페이지

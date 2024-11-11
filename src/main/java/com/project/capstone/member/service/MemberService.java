@@ -9,10 +9,7 @@ import com.project.capstone.bookmark.domain.Bookmark;
 import com.project.capstone.bookmark.repository.BookmarkRepository;
 import com.project.capstone.candidateLocation.domain.CandidateLocation;
 import com.project.capstone.candidateLocation.repository.CandidateLocationRepository;
-import com.project.capstone.member.domain.Member;
 import com.project.capstone.member.dto.request.MemberEditRequest;
-import com.project.capstone.member.dto.request.MemberRegisterRequest;
-//import com.project.capstone.member.repository.MemberRepository;
 import com.project.capstone.member.dto.response.MemberEditPageResponse;
 import com.project.capstone.member.dto.response.MainpageResponse;
 import com.project.capstone.member.dto.response.MypageResponse;
@@ -55,11 +52,11 @@ public class MemberService {
     private final MailService mailService;
 
     public void register(MemberRegisterRequest request) {
-
+        //이미 등록된 사용자
         if (memberRepository.existsByUsername(request.username())) {
             throw new BusinessLogicException(ExceptionCode.USERID_EXISTS);
         }
-
+        //이미 등록된 이메일
         if (memberRepository.existsByEmail(request.memberEmail())) {
             throw new BusinessLogicException(ExceptionCode. MEMBER_EMAIL_EXISTS);
         }
@@ -120,10 +117,34 @@ public class MemberService {
         MainpageResponse mainpageResponse = new MainpageResponse(candidateLocationList);
         return mainpageResponse;
     }
+    //회원가입시 이메일에 인증코드 보내기
+    public void sendCodeToEmailForRegistration(String email) {
 
-    public void sendCodeToEmail(String email) {
+        //알맞은 이메일 형식이 아닌경우
+        if (!isValidEmailFormat(email)) {
+            throw new BusinessLogicException(ExceptionCode.INVALID_EMAIL_FORMAT);
+        }
+
+        // 이미 등록된 이메일인지 확인
+        if (isEmailRegistered(email)) {
+            throw new BusinessLogicException(ExceptionCode. MEMBER_EMAIL_EXISTS);
+        }
+        sendVerificationCode(email);
+    }
+
+    //비밀번호 변경시 이메일에 인증코드 보내기
+    public void sendCodeToEmailForPasswordReset(String email) {
+        if (!isValidEmailFormat(email)) {
+            throw new BusinessLogicException(ExceptionCode.EMAIL_NOT_REGISTERED);
+        }
+        sendVerificationCode(email);
+    }
+
+
+    // 공통으로 인증 코드를 전송하는 메서드
+    private void sendVerificationCode(String email) {
         String code = generateRandomCode(); // 랜덤 코드 생성
-        log.info("인증코드 :{}",code);
+        log.info("인증코드 :{}", code);
         mailService.sendEmail(email, "Trannere 인증코드", "인증 코드: " + code);
 
         // 인증 코드와 만료 시간 저장
@@ -131,11 +152,13 @@ public class MemberService {
         emailVerificationExpirations.put(email, System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5)); // 5분 유효
     }
 
+    //랜덤코드 생성메서드
     private String generateRandomCode() {
         int randomCode = new Random().nextInt(999999); // 0~999999 사이의 난수 생성
         return String.format("%06d", randomCode); // 6자리 문자열로 변환
     }
 
+    //인증코드 확인 메서드
     public EmailVerificationResult verificationCode(String email, String authCode) {
         String storedCode = emailVerificationCodes.get(email);
         Long expirationTime = emailVerificationExpirations.get(email);
@@ -156,8 +179,10 @@ public class MemberService {
     }
 
     public String findUsernameByEmail(String email) {
+
         Optional<Member> member = memberRepository.findByEmail(email);
-        log.info("반환된 멤버 = {}", member);
+
+        //등록된 사용자가 아닌경우
         if(member.isEmpty()){
             throw new BusinessLogicException(ExceptionCode.USER_NOT_FOUND);
         }
@@ -181,4 +206,15 @@ public class MemberService {
         // 변경된 비밀번호 저장
         memberRepository.save(member2);
     }
+    // 이메일 형식 검증 메서드
+    private boolean isValidEmailFormat(String email) {
+        String emailRegex = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$"; // 간단한 이메일 정규식
+        return email.matches(emailRegex);
+    }
+
+    // 이메일 등록 여부 확인 메서드
+    private boolean isEmailRegistered(String email) {
+        return memberRepository.findByEmail(email).isPresent();
+    }
+
 }
