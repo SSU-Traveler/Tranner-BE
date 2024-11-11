@@ -94,16 +94,22 @@ public class MemberController {
 
     //이메일 보내기
     @PostMapping("/emails/verification-requests")
-    public ResponseEntity<Void> sendMessage(@RequestParam("email") @Valid @Email String email) {
-        memberService.sendCodeToEmail(email);
+    public ResponseEntity<Void> sendMessage(@RequestBody Map<String,String> request) {
+        memberService.sendCodeToEmailForRegistration(request.get("email"));
         return ResponseEntity.ok().build();
     }
 
     //이메일 인증
     @GetMapping("/emails/verifications")
-    public ResponseEntity<EmailVerificationResult> verificationEmail(
-            @RequestParam("email") @Valid @Email String email,
-            @RequestParam("code") String authCode) {
+    public ResponseEntity<EmailVerificationResult> verificationEmail( @RequestBody Map<String, String> request) {
+
+        String email = request.get("email");
+        log.info("세션email:{}", email);
+
+        String authCode = request.get("authCode");
+        log.info("사용자가 보낸 인증코드 :{}",authCode);
+
+
         EmailVerificationResult response = memberService.verificationCode(email, authCode);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -126,7 +132,7 @@ public class MemberController {
     @PostMapping("/findpw/emails")
     public ResponseEntity<String> sendResetPasswordEmail(@RequestBody Map<String, String> request, HttpSession session) {
         String email = request.get("email");
-        memberService.sendCodeToEmail(email);
+        memberService.sendCodeToEmailForPasswordReset(email);
         session.setAttribute("email", email);
         log.info("세션email:{}", session.getAttribute("email"));
         return ResponseEntity.ok("비밀번호 재설정 이메일 인증코드를 보냈습니다.");
@@ -157,18 +163,9 @@ public class MemberController {
         String newPassword = request.get("newPassword");
         String email = (String) session.getAttribute("email");
 
-        if (!isValidPassword(newPassword)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("비밀번호는 영문, 숫자, 특수문자를 포함한 8자 이상이어야 합니다.");
-        }
-
         memberService.changePassword(email, newPassword);
 
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
     }
 
-
-    // 비밀번호 조건 체크 (영문, 숫자, 특수문자 포함 8자리 이상)
-    private boolean isValidPassword(String password) {
-        return password.matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z\\d])[A-Za-z\\d[^A-Za-z\\d]]{8,}$");
-    }
 }
