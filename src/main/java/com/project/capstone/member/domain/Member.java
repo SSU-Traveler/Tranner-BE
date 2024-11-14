@@ -26,7 +26,7 @@ public class Member {
     @Column(name = "member_id", updatable = false)
     private Long id;
 
-    @Column(name = "user_name", nullable = false) // id, password 할 때, id임
+    @Column(name = "user_name", nullable = false) // id, password 할 때, id임  // unique임
     private String username;
 
     @Column(name = "pw", nullable = false)

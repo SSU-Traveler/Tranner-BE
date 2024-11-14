@@ -12,7 +12,6 @@ import com.project.capstone.member.dto.response.MypageResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -36,7 +35,6 @@ public class MemberController {
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody MemberRegisterRequest request) {
         memberService.register(request);
-
         return ResponseEntity.ok("회원가입에 성공하였습니다.");
     }
 
@@ -82,18 +80,23 @@ public class MemberController {
                 .build();
     }
 
-    //이메일 보내기
+    //이메일 보내기(프론트에서 회원가입, 아이디 찾기시 이 url사용하기)
     @PostMapping("/emails/verification-requests")
-    public ResponseEntity<Void> sendMessage(@RequestParam("email") @Valid @Email String email) {
-        memberService.sendCodeToEmail(email);
+    public ResponseEntity<Void> sendMessage(@RequestBody Map<String,String> request) {
+        memberService.sendCodeToEmailForRegistration(request.get("email"));
         return ResponseEntity.ok().build();
     }
 
-    //이메일 인증
+    //이메일 인증코드 확인
     @GetMapping("/emails/verifications")
-    public ResponseEntity<EmailVerificationResult> verificationEmail(
-            @RequestParam("email") @Valid @Email String email,
-            @RequestParam("code") String authCode) {
+    public ResponseEntity<EmailVerificationResult> verificationEmail( @RequestBody Map<String, String> request) {
+
+        String email = request.get("email");
+        log.info("세션email:{}", email);
+
+        String authCode = request.get("authCode");
+        log.info("사용자가 보낸 인증코드 :{}",authCode);
+
         EmailVerificationResult response = memberService.verificationCode(email, authCode);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -101,11 +104,14 @@ public class MemberController {
     //아이디 찾기
     @PostMapping("/findid")
     public ResponseEntity<Map<String, String>> findid(@Valid @RequestBody Map<String, String> request) {
+
         String email = request.get("email");
         log.info("이메일 요청: {} ", email);
 
         String username = memberService.findUsernameByEmail(email);
         log.info("이메일 요청한 사용자: {} ", username);
+
+
         Map<String, String> response = new HashMap<>();
         response.put("username", username);
 
@@ -116,7 +122,7 @@ public class MemberController {
     @PostMapping("/findpw/emails")
     public ResponseEntity<String> sendResetPasswordEmail(@RequestBody Map<String, String> request, HttpSession session) {
         String email = request.get("email");
-        memberService.sendCodeToEmail(email);
+        memberService.sendCodeToEmailForPasswordReset(email);
         session.setAttribute("email", email);
         log.info("세션email:{}", session.getAttribute("email"));
         return ResponseEntity.ok("비밀번호 재설정 이메일 인증코드를 보냈습니다.");
@@ -129,36 +135,24 @@ public class MemberController {
 
         String email = (String) session.getAttribute("email");
         log.info("세션email2:{}", email);
-        String code = request.get("code");
+        String authCode = request.get("authCode");
 
-        EmailVerificationResult result = memberService.verificationCode(email, code);
-        if (result.isVerified()) {
-            return ResponseEntity.ok("인증이 완료되었습니다. 비밀번호 페이지로 이동합니다.");
-
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증코드가 유효하지 않습니다.");
-        }
+        EmailVerificationResult result = memberService.verificationCode(email, authCode);
+        return ResponseEntity.ok("이메일 인증이 완료되었습니다.");
     }
 
     //비밀번호 변경
     @PostMapping("findpw/change")
-    public ResponseEntity<String> changePassword(
-            @RequestBody Map<String, String> request, HttpSession session) {
+    public ResponseEntity<String> changePassword(@RequestBody Map<String, String> request,
+                                                 HttpSession session) {
+
         String newPassword = request.get("newPassword");
         String email = (String) session.getAttribute("email");
 
-        if (!isValidPassword(newPassword)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("비밀번호는 영문, 숫자, 특수문자를 포함한 8자 이상이어야 합니다.");
-        }
+       //프론트에서 비밀번호 조건 추가
 
         memberService.changePassword(email, newPassword);
 
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
-    }
-
-
-    // 비밀번호 조건 체크 (영문, 숫자, 특수문자 포함 8자리 이상)
-    private boolean isValidPassword(String password) {
-        return password.matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z\\d])[A-Za-z\\d[^A-Za-z\\d]]{8,}$");
     }
 }

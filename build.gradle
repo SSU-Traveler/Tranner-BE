@@ -54,6 +54,9 @@ dependencies {
 	//테스트에서 lombok 사용
 	testCompileOnly 'org.projectlombok:lombok'
 	testAnnotationProcessor 'org.projectlombok:lombok'
+
+	// Json parser
+	implementation 'com.googlecode.json-simple:json-simple:1.1'
 }
 
 tasks.named('test') {

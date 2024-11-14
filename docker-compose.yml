@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  app:
+    image: minsokuri/tranner
+    container_name: tranner
+    ports:
+      - "8080:8080"
+    environment:
+      MYSQL_URL: ${MYSQL_URL}
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      JWT_SECRETKEY: ${JWT_SECRETKEY}
+    restart: always
