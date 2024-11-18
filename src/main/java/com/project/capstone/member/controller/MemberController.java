@@ -3,6 +3,7 @@ package com.project.capstone.member.controller;
 import com.project.capstone.global.jwt.JwtUtil;
 import com.project.capstone.member.dto.request.MemberEditRequest;
 import com.project.capstone.member.dto.request.MemberRegisterRequest;
+import com.project.capstone.member.dto.request.SaveUserInfoRequest;
 import com.project.capstone.member.dto.response.MemberEditPageResponse;
 
 import com.project.capstone.member.dto.response.EmailVerificationResult;
@@ -154,5 +155,27 @@ public class MemberController {
         memberService.changePassword(email, newPassword);
 
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
+    }
+
+    // user가 창을 닫거나, 로그아웃 했을 때, 북마크(찜), 장바구니 리스트를 저장해야됨
+    // 왜냐하면 user 가 사용 중간에 내용을 변경했을 테니까
+    @PostMapping("/saveUserInfo")
+    public ResponseEntity<String> saveUserInfo(HttpServletRequest request,
+                                               @RequestBody SaveUserInfoRequest saveUserInfoRequest){
+
+        String tokenStr = request.getHeader("Authorization");
+        String token = tokenStr.split(" ")[1];
+        String username = jwtUtil.getUsername(token);
+
+        log.info("창을 닫거나, 로그아웃을 한 username은 = {}", username);
+
+        // DTO에서 받은 데이터 확인 (로깅 및 디버깅용)
+        log.info("Candidate Locations: " + saveUserInfoRequest.getCandidateLocations());
+        log.info("Bookmarks: " + saveUserInfoRequest.getBookmarks());
+
+        // 저장 로직 수행
+        memberService.saveUserData(username,saveUserInfoRequest);
+
+        return ResponseEntity.ok("User 정보 (bookmarks(찜 리스트),candidateLocations(장바구니 리스트)) 저장 성공");
     }
 }

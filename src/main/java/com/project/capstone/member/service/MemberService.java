@@ -3,14 +3,12 @@ package com.project.capstone.member.service;
 import com.project.capstone.global.exception.BusinessLogicException;
 import com.project.capstone.global.exception.ExceptionCode;
 import com.project.capstone.member.domain.Member;
-import com.project.capstone.member.dto.request.MemberRegisterRequest;
-import com.project.capstone.member.dto.request.UserCheckRequest;
+import com.project.capstone.member.dto.request.*;
 import com.project.capstone.member.dto.response.EmailVerificationResult;
 import com.project.capstone.bookmark.domain.Bookmark;
 import com.project.capstone.bookmark.repository.BookmarkRepository;
 import com.project.capstone.candidateLocation.domain.CandidateLocation;
 import com.project.capstone.candidateLocation.repository.CandidateLocationRepository;
-import com.project.capstone.member.dto.request.MemberEditRequest;
 import com.project.capstone.member.dto.response.MemberEditPageResponse;
 import com.project.capstone.member.dto.response.MainpageResponse;
 import com.project.capstone.member.dto.response.MypageResponse;
@@ -26,6 +24,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.awt.print.Book;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -221,4 +220,59 @@ public class MemberService {
         return memberRepository.findByEmail(email).isPresent();
     }
 
+    /**
+     * 창을 닫거나, 로그아웃 시 
+     * user의 정보
+     * bookmarks(찜 리스트),
+     * candidateLocations(장바구니 리스트)
+     * 를 저장
+     */
+    @Transactional
+    public void saveUserData(String username,
+                             SaveUserInfoRequest saveUserInfoRequest) {
+
+        // 1. username으로 Member 조회
+        Member member = memberRepository.findByUsername(username);
+        if (member == null) {
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_FOUND);
+        }
+        log.info("member 조회 결과 = {}", member);
+
+        // 2. 기존 Bookmarks 삭제 후 새로 추가
+        member.deleteAllBookmarks();
+        log.info("{}의 모든 bookmarks = {}", member, member.getBookmarks());
+        List<Bookmark> bookmarks = getBookmarks(saveUserInfoRequest);
+        for(Bookmark bookmark : bookmarks){
+            member.addBookmark(bookmark);
+        }
+        log.info("{}의 모든 bookmarks = {}", member, member.getBookmarks());
+        log.info("북마크 데이터 저장 완료. 데이터: {}", bookmarks);
+
+        // 3. 기존 CandidateLocations 삭제 후 새로 추가
+        member.deleteAllCandidateLocations();
+        log.info("{}의 모든 candidateLocations = {}", member, member.getCandidateLocations());
+        List<CandidateLocation> candidateLocations = getCandidateLocations(saveUserInfoRequest, member);
+        for(CandidateLocation candidateLocation : candidateLocations){
+            member.addCandidateLocation(candidateLocation);
+        }
+        log.info("{}의 모든 candidateLocations = {}", member, member.getCandidateLocations());
+        log.info("장바구니 데이터 저장 완료. 데이터: {}", candidateLocations);
+    }
+
+    private static List<CandidateLocation> getCandidateLocations(SaveUserInfoRequest saveUserInfoRequest, Member member) {
+        return saveUserInfoRequest.getCandidateLocations().stream()
+                .map(locationRequest -> CandidateLocation.builder()
+                        .member(member)
+                        .location(locationRequest.location())
+                        .build())
+                .toList();
+    }
+
+    private static List<Bookmark> getBookmarks(SaveUserInfoRequest saveUserInfoRequest) {
+        return saveUserInfoRequest.getBookmarks().stream()
+                .map(bookmarkResponse -> Bookmark.builder()
+                        .location(bookmarkResponse.location())
+                        .build())
+                .toList();
+    }
 }

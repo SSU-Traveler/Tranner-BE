@@ -73,6 +73,10 @@ public class Member {
         this.bookmarks.remove(bookmark);
     }
 
+    public void deleteAllBookmarks(){
+        this.bookmarks.clear();
+    }
+
     // === 장바구니 리스트 === //
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CandidateLocation> candidateLocations = new ArrayList<>();
@@ -93,6 +97,10 @@ public class Member {
 
     public void deleteCandidateLocation(CandidateLocation candidateLocation) {
         this.candidateLocations.remove(candidateLocation);
+    }
+
+    public void deleteAllCandidateLocations() {
+        this.candidateLocations.clear();
     }
 
     // === 여행 리스트 === //
