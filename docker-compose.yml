@@ -12,3 +12,25 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       JWT_SECRETKEY: ${JWT_SECRETKEY}
     restart: always
+    networks:
+      - backend
+
+  nginx:
+    image: nginx
+    container_name: my_nginx
+    ports:
+      - "8081:80"
+    volumes:
+      - /home/ubuntu/nginx.conf:/etc/nginx/nginx.conf # 절대 경로로 변경
+    depends_on:
+      - app
+    networks:
+      - backend
+      - frontend
+
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge
+
