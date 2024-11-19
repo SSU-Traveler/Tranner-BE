@@ -5,7 +5,12 @@ import com.project.capstone.candidateLocation.domain.CandidateLocation;
 import com.project.capstone.candidateLocation.repository.CandidateLocationRepository;
 import com.project.capstone.global.dto.response.LoginResponse;
 import com.project.capstone.global.exception.ExceptionCode;
+import com.project.capstone.member.domain.Member;
 import com.project.capstone.member.dto.response.CustomUserDetails;
+import com.project.capstone.member.dto.response.MainpageResponse;
+import com.project.capstone.member.repository.MemberRepository;
+import com.project.capstone.member.service.MemberService;
+import com.project.capstone.schedule.dto.response.BookmarkResponse;
 import com.project.capstone.schedule.dto.response.CandidateLocationResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,6 +36,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final CandidateLocationRepository locationRepository;
+    private final MemberService memberService;
+    private final MemberRepository memberRepository;
 
 
     @Override
@@ -67,16 +74,35 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
+        Member member = memberRepository.findNicknameByUsername(username);
+
+        String nickname = member.getNickname();
+
         String accessToken = jwtUtil.createAccessToken(username, role);
-        String refreshToken = jwtUtil.createRefreshToken(username, role);
+
+        // Refresh Token은 기존 것을 재사용하거나 만료된 경우 새로 생성
+        String refreshToken = request.getHeader("Refresh-Token");
+        if (refreshToken == null || jwtUtil.isExpired(refreshToken)) {
+            refreshToken = jwtUtil.createRefreshToken(username, role);
+            System.out.printf("새로운 리프레시 토큰 생성");
+        }
+
 
         response.addHeader("Authorization", "Bearer " + accessToken);
         response.addHeader("Refresh-Token", "Bearer " + refreshToken);
-        List<CandidateLocation> list = locationRepository.findByUsername(username);
-        List<CandidateLocationResponse> candidateLocationList = list.stream().map(CandidateLocationResponse::of).toList();
+
+
+        // 장바구니 정보 가져오기
+        MainpageResponse candidateLocationResponse = memberService.getCandidateLocations(username);
+        List<CandidateLocationResponse> candidateLocation = candidateLocationResponse.getCandidateLocation();
+
+        // 찜 목록 정보 가져오기
+        MainpageResponse bookmarkResponse = memberService.getBookmarkLocations(username);
+        List<BookmarkResponse> bookmark = bookmarkResponse.getBookmark();
+
 
         // 응답을 JSON 형식으로 쓰기
-        LoginResponse loginResponse = new LoginResponse(candidateLocationList, accessToken, refreshToken);
+        LoginResponse loginResponse = new LoginResponse(candidateLocation, bookmark, accessToken, refreshToken, username, nickname);
         response.setContentType("application/json");
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");

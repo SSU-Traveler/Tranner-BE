@@ -22,15 +22,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
-
-import org.springframework.http.ResponseEntity;
-
-import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,6 +41,11 @@ public class MemberController {
         return ResponseEntity.ok("회원가입에 성공하였습니다.");
     }
 
+    @GetMapping("/idDuplicatedCheck")
+    public ResponseEntity<Boolean> idDuplicatedCheck(@RequestParam String id){
+        boolean result =  memberService.idDuplicatedCheck(id);
+        return ResponseEntity.ok().body(result);
+    }
     // 마이페이지
     @GetMapping("/mypage")
     public ResponseEntity<MypageResponse> mypage(HttpServletRequest request) {
@@ -92,10 +88,17 @@ public class MemberController {
                 .build();
     }
 
-    //이메일 보내기
-    @PostMapping("/emails/verification-requests")
-    public ResponseEntity<Void> sendMessage(@RequestBody Map<String,String> request) {
+    //회원가입 이메일 보내기
+    @PostMapping("/emails/register-requests")
+    public ResponseEntity<Void> sendMessageForRegister(@RequestBody Map<String,String> request) {
         memberService.sendCodeToEmailForRegistration(request.get("email"));
+        return ResponseEntity.ok().build();
+    }
+
+    //비밀번호 변경시 이메일 보내기
+    @PostMapping("/emails/resetPassword-requests")
+    public ResponseEntity<Void> sendMessageForPassword(@RequestBody Map<String,String> request) {
+        memberService.sendCodeToEmailForPasswordReset(request.get("email"));
         return ResponseEntity.ok().build();
     }
 
@@ -162,10 +165,6 @@ public class MemberController {
             @RequestBody Map<String, String> request, HttpSession session) {
         String newPassword = request.get("newPassword");
         String email = (String) session.getAttribute("email");
-
-        if (!isValidPassword(newPassword)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("비밀번호는 영문, 숫자, 특수문자를 포함한 8자 이상이어야 합니다.");
-        }
 
         memberService.changePassword(email, newPassword);
 

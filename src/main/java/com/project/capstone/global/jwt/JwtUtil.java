@@ -13,8 +13,8 @@ import java.util.UUID;
 public class JwtUtil {
     private SecretKey secretKey;
     private final long accessTokenExpirationMs = 60 * 60 * 1000; // 1 hour
-    private final long refreshTokenExpirationMs = 14 * 24 * 60 * 60 * 1000; // 2 weeks
-
+    private final long refreshTokenExpirationMs = 20*1000; // 2 weeks
+    //14 * 24 * 60 * 60 * 1000
     public JwtUtil(@Value("${spring.jwt.secret}") String secret) {
         this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
     }
