@@ -19,7 +19,7 @@ public class AuthController {
     public AuthController(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
-
+    //사용자가 새로운 페이지 들어갈때 엑세스 토큰 만료시 프론트에서 이 api요청해서 엑세스 토큰
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, String>> refreshAccessToken(@RequestHeader("Refresh-Token") String refreshToken) {
         try {

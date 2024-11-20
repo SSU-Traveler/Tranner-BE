@@ -39,7 +39,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final MemberService memberService;
     private final MemberRepository memberRepository;
 
-
+    //사용자 로그인 데이터 추출
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
 
@@ -77,15 +77,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Member member = memberRepository.findNicknameByUsername(username);
 
         String nickname = member.getNickname();
-
+        //Access Token 생성
         String accessToken = jwtUtil.createAccessToken(username, role);
+        //Refresh Token 생성
+        String refreshToken = jwtUtil.createRefreshToken(username, role);
 
-        // Refresh Token은 기존 것을 재사용하거나 만료된 경우 새로 생성
-        String refreshToken = request.getHeader("Refresh-Token");
-        if (refreshToken == null || jwtUtil.isExpired(refreshToken)) {
-            refreshToken = jwtUtil.createRefreshToken(username, role);
-            System.out.printf("새로운 리프레시 토큰 생성");
-        }
 
 
         response.addHeader("Authorization", "Bearer " + accessToken);
@@ -102,7 +98,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
 
         // 응답을 JSON 형식으로 쓰기
-        LoginResponse loginResponse = new LoginResponse(candidateLocation, bookmark, accessToken, refreshToken, username, nickname);
+        LoginResponse loginResponse = new LoginResponse(candidateLocation, bookmark, accessToken, refreshToken, username, nickname , 60 * 60 * 1000,14 * 24 * 60 * 60 * 1000);
         response.setContentType("application/json");
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");

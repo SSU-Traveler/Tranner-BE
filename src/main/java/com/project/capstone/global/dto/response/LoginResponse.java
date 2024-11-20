@@ -20,8 +20,11 @@ public class LoginResponse<T> {
     private String refreshToken;
     private String username;
     private String nickname;
+    private int accessTokenExpiration;
+    private int refreshTokenExpiration;
 
-    public LoginResponse(List<CandidateLocationResponse> candidateLocation,List<BookmarkResponse> bookmark ,String accessToken, String refreshToken,String username , String nickname)
+    public LoginResponse(List<CandidateLocationResponse> candidateLocation,List<BookmarkResponse> bookmark ,String accessToken, String refreshToken,String username , String nickname
+    ,int accessTokenExpiration, int refreshTokenExpiration)
     {
         this.candidateLocation = candidateLocation;
         this.bookmark=bookmark;
@@ -29,6 +32,8 @@ public class LoginResponse<T> {
         this.refreshToken=refreshToken;
         this.username=username;
         this.nickname=nickname;
+        this.accessTokenExpiration=accessTokenExpiration;
+        this.refreshTokenExpiration=refreshTokenExpiration;
     }
 }
 
