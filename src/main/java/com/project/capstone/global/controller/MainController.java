@@ -1,9 +1,7 @@
 package com.project.capstone.global.controller;
 
-import com.project.capstone.bookmark.domain.Bookmark;
 import com.project.capstone.bookmark.repository.BookmarkRepository;
 import com.project.capstone.global.jwt.JwtUtil;
-import com.project.capstone.member.domain.Member;
 import com.project.capstone.member.dto.response.MainpageResponse;
 import com.project.capstone.member.repository.MemberRepository;
 import com.project.capstone.member.service.MemberService;

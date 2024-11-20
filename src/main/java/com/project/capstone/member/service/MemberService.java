@@ -4,7 +4,6 @@ import com.project.capstone.global.exception.BusinessLogicException;
 import com.project.capstone.global.exception.ExceptionCode;
 import com.project.capstone.member.domain.Member;
 import com.project.capstone.member.dto.request.MemberRegisterRequest;
-import com.project.capstone.member.dto.request.UserCheckRequest;
 import com.project.capstone.member.dto.response.EmailVerificationResult;
 import com.project.capstone.bookmark.domain.Bookmark;
 import com.project.capstone.bookmark.repository.BookmarkRepository;
@@ -67,9 +66,9 @@ public class MemberService {
                 .build();
         memberRepository.save(member);
     }
-    public boolean idDuplicatedCheck(UserCheckRequest request) {
+    public boolean idDuplicatedCheck(String username) {
         //중복이 있으면 true 중복이 없으면 false
-        return memberRepository.existsByUsername(request.username());
+        return memberRepository.existsByUsername(username);
     }
 
     // 토큰에서 추출한 사용자 정보로 마이페이지에서 조회할 찜 리스트, 스케줄 리스트 반환
@@ -142,8 +141,6 @@ public class MemberService {
     }
 
 
-
-    //
     //회원가입시 이메일에 인증코드 보내기
     public void sendCodeToEmailForRegistration(String email) {
 
