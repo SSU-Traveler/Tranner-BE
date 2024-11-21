@@ -151,7 +151,7 @@ public class ScheduleService {
         // 스케줄 존재 여부 확인
         Optional<Schedule> schedule4Delete = scheduleRepository.findById(scheduleId);
 
-        if(schedule4Delete.isEmpty()) throw new BusinessLogicException(ExceptionCode.SCHEDULE_NOT_FOUND, "Schedule not found with ID: " + scheduleId);
+        if(schedule4Delete.isEmpty()) throw new BusinessLogicException(ExceptionCode.SCHEDULE_NOT_FOUND);
         else member.deleteSchedule(schedule4Delete.get());
     }
 }
