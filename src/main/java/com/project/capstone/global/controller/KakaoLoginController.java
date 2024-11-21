@@ -1,22 +1,14 @@
 package com.project.capstone.global.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.capstone.candidateLocation.domain.CandidateLocation;
 import com.project.capstone.global.Service.KakaoService;
 import com.project.capstone.global.dto.KakaoDTO;
-import com.project.capstone.global.dto.response.LoginResponse;
-import com.project.capstone.global.jwt.JwtUtil;
-import com.project.capstone.member.domain.Member;
 import com.project.capstone.member.dto.request.MemberRegisterRequest;
 import com.project.capstone.member.service.MemberService;
-import com.project.capstone.schedule.dto.response.CandidateLocationResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
