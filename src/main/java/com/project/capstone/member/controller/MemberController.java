@@ -163,10 +163,6 @@ public class MemberController {
         String newPassword = request.get("newPassword");
         String email = (String) session.getAttribute("email");
 
-        if (!isValidPassword(newPassword)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("비밀번호는 영문, 숫자, 특수문자를 포함한 8자 이상이어야 합니다.");
-        }
-
         memberService.changePassword(email, newPassword);
 
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
