@@ -58,7 +58,7 @@ public class Member {
     /******************************************************/
 
     // === 찜 리스트 === //
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "member",fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Bookmark> bookmarks = new ArrayList<>();
 
     public void addBookmark(Bookmark bookmark) {
@@ -104,7 +104,7 @@ public class Member {
     }
 
     // === 여행 리스트 === //
-    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "member", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Schedule> schedules = new ArrayList<>();
 
     public Optional<Schedule> getSchedule(Schedule schedule){

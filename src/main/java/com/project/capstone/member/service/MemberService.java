@@ -75,17 +75,19 @@ public class MemberService {
 
     // 토큰에서 추출한 사용자 정보로 마이페이지에서 조회할 찜 리스트, 스케줄 리스트 반환
     public MypageResponse getMyPage(String username){
+
         Member member = memberRepository.findByUsername(username);
 
-        List<Bookmark> bookmarks = bookmarkRepository.findAllById(member.getId()); // 멤버가 찜한 장소 리스트 반환
-        List<BookmarkResponse> bookmarksList = bookmarks.stream().map(BookmarkResponse::of).toList();
-        log.info("마이페이지 내부 북마크 = {}", bookmarksList);
-
-        List<Schedule> schedules = scheduleRepository.findAllById(member.getId()); // 멤버가 만든 스케줄 반환
+        List<Schedule> schedules = member.getSchedules();
         List<ScheduleResponse> schedulesList = schedules.stream().map(ScheduleResponse::of).toList();
         log.info("마이페이지 내부 스케줄 = {}", schedulesList);
 
-        MypageResponse mypageResponse = new MypageResponse(bookmarksList, schedulesList);
+        List<Bookmark> bookmarks = member.getBookmarks();
+        List<BookmarkResponse> bookmarksList = bookmarks.stream().map(BookmarkResponse::of).toList();
+        log.info("마이페이지 내부 북마크 = {}", bookmarksList);
+
+        MypageResponse mypageResponse = new MypageResponse(schedulesList, bookmarksList);
+        log.info("mypageResponse = {}",mypageResponse);
 
         return mypageResponse;
     }
