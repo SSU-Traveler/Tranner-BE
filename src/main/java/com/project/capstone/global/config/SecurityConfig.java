@@ -32,12 +32,16 @@ public class SecurityConfig {
     private final MemberService memberService;
 
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil, CandidateLocationRepository candidateLocationRepository, @Lazy MemberService memberService) {
+    private final MemberRepository memberRepository;
+
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil, CandidateLocationRepository candidateLocationRepository, MemberRepository memberRepository) {
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
         this.candidateLocationRepository = candidateLocationRepository;
         this.memberService = memberService;
 
+        this.memberRepository = memberRepository;
     }
 
 
@@ -88,6 +92,7 @@ public class SecurityConfig {
                 .addFilterBefore(new JwtFilter(jwtUtil), LoginFilter.class);
         http
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, candidateLocationRepository, memberService ,memberRepository), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, candidateLocationRepository, memberRepository), UsernamePasswordAuthenticationFilter.class);
 
         //세션 설정
         http

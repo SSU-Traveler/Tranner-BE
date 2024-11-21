@@ -11,6 +11,7 @@ import com.project.capstone.member.dto.response.MainpageResponse;
 import com.project.capstone.member.repository.MemberRepository;
 import com.project.capstone.member.service.MemberService;
 import com.project.capstone.schedule.dto.response.BookmarkResponse;
+import com.project.capstone.member.repository.MemberRepository;
 import com.project.capstone.schedule.dto.response.CandidateLocationResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -96,6 +97,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         MainpageResponse bookmarkResponse = memberService.getBookmarkLocations(username);
         List<BookmarkResponse> bookmark = bookmarkResponse.getBookmark();
 
+        Member member = memberRepository.findByUsername(username);
+        List<CandidateLocation> list = locationRepository.findByMember(member);
+        List<CandidateLocationResponse> candidateLocationList = list.stream().map(CandidateLocationResponse::of).toList();
 
         // 응답을 JSON 형식으로 쓰기
         LoginResponse loginResponse = new LoginResponse(candidateLocation, bookmark, accessToken, refreshToken, username, nickname , 60 * 60 * 1000,14 * 24 * 60 * 60 * 1000);
