@@ -1,8 +1,10 @@
 package com.project.capstone.schedule.controller;
 
+import com.project.capstone.bookmark.domain.Bookmark;
 import com.project.capstone.global.jwt.JwtUtil;
+import com.project.capstone.member.domain.Member;
+import com.project.capstone.member.repository.MemberRepository;
 import com.project.capstone.member.service.CustomMemberDetailService;
-import com.project.capstone.schedule.domain.Schedule;
 import com.project.capstone.schedule.dto.request.AddScheduleRequest;
 import com.project.capstone.schedule.dto.request.EditScheduleRequest;
 import com.project.capstone.schedule.dto.request.GetAddSchedule;
@@ -15,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
+import com.project.capstone.bookmark.repository.BookmarkRepository;
 import java.util.List;
 
 @RestController
@@ -26,16 +28,22 @@ public class ScheduleController {
     private final ScheduleService scheduleService;
     private final CustomMemberDetailService customMemberDetailService;
     private final JwtUtil jwtUtil;
+    private final BookmarkRepository bookmarkRepository;
+    private final MemberRepository memberRepository;
+    //북마크 업데이트
 
-    //스케줄 생성 페이지
-    @GetMapping("/add")
-    public ResponseEntity<ListScheduleResponse> CreateSchedule(HttpServletRequest request, @RequestBody GetAddSchedule locations) {
+    //저장된 북마크 정보 가져오기
+    @GetMapping("/getbookmarks")
+    public ResponseEntity<List<Bookmark>> CreateSchedule(HttpServletRequest request, @RequestBody GetAddSchedule locations) {
         String tokenStr = request.getHeader("Authorization");
         String token = tokenStr.split(" ")[1];
         String username = jwtUtil.getUsername(token);
 
+        Member member = memberRepository.findByUsername(username);
+        List<Bookmark> bookmarks = bookmarkRepository.findAllByMemberId(member.getId());
         ListScheduleResponse listScheduleResponse =  scheduleService.AddCandidateLocation(locations, username);
-        return ResponseEntity.ok().body(listScheduleResponse);
+
+        return ResponseEntity.ok().body(bookmarks);
     }
 
     // 신규 스케줄 생성
