@@ -1,5 +1,6 @@
 package com.project.capstone.schedule.controller;
 
+import com.project.capstone.global.exception.BusinessLogicException;
 import com.project.capstone.global.jwt.JwtUtil;
 import com.project.capstone.member.service.CustomMemberDetailService;
 import com.project.capstone.schedule.domain.Schedule;
@@ -75,5 +76,24 @@ public class ScheduleController {
         log.info("스케줄 변경 이후 {}의 스케줄들 = {}", username, allSchedules);
 
         return ResponseEntity.ok("스케줄 수정 성공");
+    }
+
+    // 기존 스케줄 삭제
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteSchedule(HttpServletRequest request,
+                                                 @RequestParam("scheduleId") Long scheduleId){
+
+        String tokenStr = request.getHeader("Authorization");
+        String token = tokenStr.split(" ")[1];
+        String username = jwtUtil.getUsername(token);
+
+        log.info("스케줄 삭제 요청을 한 멤버 = {}",username);
+
+        try{
+            scheduleService.deleteSchedule(username,scheduleId);
+            return ResponseEntity.ok("Schedule with ID " + scheduleId + " was deleted successfully.");
+        } catch(BusinessLogicException e){
+            throw e; // 예외를 global/exception/GlobalExceptionHandler
+        }
     }
 }
