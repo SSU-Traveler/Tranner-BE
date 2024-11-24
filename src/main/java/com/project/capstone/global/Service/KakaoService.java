@@ -1,6 +1,8 @@
 package com.project.capstone.global.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.capstone.bookmark.domain.Bookmark;
+import com.project.capstone.bookmark.repository.BookmarkRepository;
 import com.project.capstone.candidateLocation.domain.CandidateLocation;
 import com.project.capstone.candidateLocation.repository.CandidateLocationRepository;
 import com.project.capstone.global.dto.KakaoDTO;
@@ -8,6 +10,7 @@ import com.project.capstone.global.dto.response.LoginResponse;
 import com.project.capstone.global.jwt.JwtUtil;
 import com.project.capstone.member.domain.Member;
 import com.project.capstone.member.repository.MemberRepository;
+import com.project.capstone.schedule.dto.response.BookmarkResponse;
 import com.project.capstone.schedule.dto.response.CandidateLocationResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
@@ -36,6 +39,7 @@ public class KakaoService {
     private final JwtUtil jwtUtil;
     private final MemberRepository memberRepository;
     private final CandidateLocationRepository candidateLocationRepository;
+    private final BookmarkRepository bookmarkRepository;
 
     @Value("${kakao.client.id}")
     private String KAKAO_CLIENT_ID;
@@ -136,17 +140,26 @@ public class KakaoService {
 
     // jwt 토큰을 발급 및 프론트로 전달
     public void makeAndSendJwtToken(KakaoDTO kakaoInfo, HttpServletResponse response) throws IOException {
+
         // jwt 토큰 발급
         String accessToken = jwtUtil.createAccessToken(Long.toString(kakaoInfo.getId()), "USER");
         String refreshToken = jwtUtil.createRefreshToken(Long.toString(kakaoInfo.getId()), "USER");
 
         // jwt 토큰 프론트로 전달
         Member member = memberRepository.findByUsername(Long.toString(kakaoInfo.getId()));
+
         List<CandidateLocation> list = candidateLocationRepository.findByMember(member);
         List<CandidateLocationResponse> candidateLocationList = list.stream().map(CandidateLocationResponse::of).toList();
 
+        List<Bookmark> bookmarks = bookmarkRepository.findByMember(member);
+        List<BookmarkResponse> bookmarkResponses = bookmarks.stream().map(BookmarkResponse::of).toList();
+
         // 응답을 JSON 형식으로 쓰기
-        LoginResponse loginResponse = new LoginResponse(candidateLocationList, accessToken, refreshToken);
+        LoginResponse loginResponse = new LoginResponse(candidateLocationList,bookmarkResponses,
+                accessToken, refreshToken,
+                member.getUsername(),member.getNickname(),
+                60 * 60 * 1000,14 * 24 * 60 * 60 * 1000);
+
         response.setContentType("application/json");
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
