@@ -7,6 +7,7 @@ import com.project.capstone.global.jwt.JwtUtil;
 import com.project.capstone.global.jwt.LoginFilter;
 import com.project.capstone.member.repository.MemberRepository;
 import com.project.capstone.member.service.MemberService;
+import com.project.capstone.redis.RedisSessionService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -30,18 +31,18 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final CandidateLocationRepository candidateLocationRepository;
     private final MemberService memberService;
-
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil, CandidateLocationRepository candidateLocationRepository, @Lazy MemberService memberService) {
     private final MemberRepository memberRepository;
+    private final RedisSessionService redisSessionService;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil, CandidateLocationRepository candidateLocationRepository, MemberRepository memberRepository) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil, CandidateLocationRepository candidateLocationRepository, @Lazy MemberService memberService , MemberRepository memberRepository, RedisSessionService redisSessionService  ) {
+
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
         this.candidateLocationRepository = candidateLocationRepository;
         this.memberService = memberService;
-
         this.memberRepository = memberRepository;
+        this.redisSessionService = redisSessionService;
     }
 
 
@@ -90,9 +91,9 @@ public class SecurityConfig {
 
         http
                 .addFilterBefore(new JwtFilter(jwtUtil), LoginFilter.class);
+        RedisSessionService RedisSessionService;
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, candidateLocationRepository, memberService ,memberRepository), UsernamePasswordAuthenticationFilter.class);
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, candidateLocationRepository, memberRepository), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, candidateLocationRepository, memberService ,memberRepository,redisSessionService), UsernamePasswordAuthenticationFilter.class);
 
         //세션 설정
         http
