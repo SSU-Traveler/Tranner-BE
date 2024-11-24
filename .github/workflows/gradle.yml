@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  # Docker 이미지를 빌드하고 Docker Hub에 푸시하는 과정
+  # Docker 이미지를 빌드하고 Docker Hub에 푸시하는 과정 (CI)
   build-and-push:
     runs-on: ubuntu-latest
     steps:
@@ -47,23 +47,3 @@ jobs:
       # Docker Hub에 이미지 푸시
       - name: docker Hub push
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/tranner
-
-  # EC2에 Docker Compose로 배포
-  deploy-on-ec2:
-    needs: build-and-push
-    runs-on: self-hosted
-    steps:
-      - name: SSH to EC2 and deploy with Docker Compose
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            docker-compose down
-            docker-compose pull
-            export MYSQL_URL="${{ secrets.MYSQL_URL }}"
-            export MYSQL_USERNAME="${{ secrets.MYSQL_USERNAME }}"
-            export MYSQL_PASSWORD="${{ secrets.MYSQL_PASSWORD }}"
-            docker-compose up -d
- 

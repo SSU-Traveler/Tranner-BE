@@ -38,7 +38,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         String token = authorization.split(" ")[1];
-
+        System.out.println("전달된 토큰 정보 :" + token);
         //토큰 소멸 시간 검증
         if (jwtUtil.isExpired(token)) {
 

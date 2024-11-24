@@ -39,6 +39,11 @@ public class MemberController {
         return ResponseEntity.ok("회원가입에 성공하였습니다.");
     }
 
+    @GetMapping("/idDuplicatedCheck")
+    public ResponseEntity<Boolean> idDuplicatedCheck(@RequestParam String id){
+        boolean result =  memberService.idDuplicatedCheck(id);
+        return ResponseEntity.ok().body(result);
+    }
     // 마이페이지
     @GetMapping("/mypage")
     public ResponseEntity<MypageResponse> mypage(HttpServletRequest request) {
@@ -81,10 +86,18 @@ public class MemberController {
                 .build();
     }
 
-    //이메일 보내기(프론트에서 회원가입, 아이디 찾기시 이 url사용하기)
-    @PostMapping("/emails/verification-requests")
-    public ResponseEntity<Void> sendMessage(@RequestBody Map<String,String> request) {
+    //회원가입 이메일 보내기
+    @PostMapping("/emails/register-requests")
+    public ResponseEntity<Void> sendMessageForRegister(@RequestBody Map<String,String> request) {
+  
         memberService.sendCodeToEmailForRegistration(request.get("email"));
+        return ResponseEntity.ok().build();
+    }
+
+    //비밀번호 변경시 이메일 보내기
+    @PostMapping("/emails/resetPassword-requests")
+    public ResponseEntity<Void> sendMessageForPassword(@RequestBody Map<String,String> request) {
+        memberService.sendCodeToEmailForPasswordReset(request.get("email"));
         return ResponseEntity.ok().build();
     }
 
@@ -149,8 +162,6 @@ public class MemberController {
 
         String newPassword = request.get("newPassword");
         String email = (String) session.getAttribute("email");
-
-       //프론트에서 비밀번호 조건 추가
 
         memberService.changePassword(email, newPassword);
 

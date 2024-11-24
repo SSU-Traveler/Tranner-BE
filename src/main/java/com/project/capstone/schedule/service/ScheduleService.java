@@ -136,7 +136,7 @@ public class ScheduleService {
         // 장바구니는 담아놓고 로그아웃 했을 경우에만 저장 후 로그아웃
         // 로그인했을 경우에 저장된 장바구니 리스트 반환
 
-        List<Bookmark> bookmarks = bookmarkRepository.findAllById(member.getId()); // 멤버가 찜한 장소 리스트 반환
+        List<Bookmark> bookmarks = bookmarkRepository.findAllByMemberId(member.getId()); // 멤버가 찜한 장소 리스트 반환
         List<BookmarkResponse> bookmarksList = bookmarks.stream().map(BookmarkResponse::of).toList();
         ListScheduleResponse listScheduleResponse = new ListScheduleResponse(candidateLocationList, bookmarksList); // 장바구니 리스트, 찜한 장소 리스트를 넘겨줌
         return listScheduleResponse;
