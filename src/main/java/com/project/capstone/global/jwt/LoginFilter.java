@@ -10,12 +10,14 @@ import com.project.capstone.member.dto.response.CustomUserDetails;
 import com.project.capstone.member.dto.response.MainpageResponse;
 import com.project.capstone.member.repository.MemberRepository;
 import com.project.capstone.member.service.MemberService;
+import com.project.capstone.redis.RedisSessionService;
 import com.project.capstone.schedule.dto.response.BookmarkResponse;
 import com.project.capstone.schedule.dto.response.CandidateLocationResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -38,6 +40,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final CandidateLocationRepository locationRepository;
     private final MemberService memberService;
     private final MemberRepository memberRepository;
+    // RedisSessionService 추가
+    private final RedisSessionService redisSessionService;
+
+
+
 
     //사용자 로그인 데이터 추출
     @Override
@@ -82,11 +89,17 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         //Refresh Token 생성
         String refreshToken = jwtUtil.createRefreshToken(username, role);
 
-
-
         response.addHeader("Authorization", "Bearer " + accessToken);
         response.addHeader("Refresh-Token", "Bearer " + refreshToken);
 
+        // Redis에 로그인 세션 정보 저장
+        String sessionId = "session:" + username; // 세션 ID 생성
+        redisSessionService.saveSession(sessionId, customUserDetails);
+
+
+        // Redis에 사용자 아이디 저장
+        String redisUserKey = "user:" + username; // 사용자 ID 저장을 위한 Key
+        redisSessionService.saveSession(redisUserKey, username);
 
         // 장바구니 정보 가져오기
         MainpageResponse candidateLocationResponse = memberService.getCandidateLocations(username);
