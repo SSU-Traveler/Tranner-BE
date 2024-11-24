@@ -7,11 +7,13 @@ import com.project.capstone.schedule.dto.response.ScheduleResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.List;
 
 @Getter
 @Setter
+@ToString
 public class LoginResponse<T> {
     @Schema(description = "장바구니 리스트 데이터")
     private List<CandidateLocationResponse> candidateLocation;

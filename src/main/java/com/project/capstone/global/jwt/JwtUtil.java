@@ -40,6 +40,7 @@ public class JwtUtil {
                 .signWith(secretKey)
                 .compact();
     }
+
     public String createRefreshToken(String username , String role ) {
         return Jwts.builder()
                 .claim("username " , username)

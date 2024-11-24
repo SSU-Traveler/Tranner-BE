@@ -4,12 +4,12 @@ import com.project.capstone.global.exception.BusinessLogicException;
 import com.project.capstone.global.exception.ExceptionCode;
 import com.project.capstone.member.domain.Member;
 import com.project.capstone.member.dto.request.MemberRegisterRequest;
+import com.project.capstone.member.dto.request.*;
 import com.project.capstone.member.dto.response.EmailVerificationResult;
 import com.project.capstone.bookmark.domain.Bookmark;
 import com.project.capstone.bookmark.repository.BookmarkRepository;
 import com.project.capstone.candidateLocation.domain.CandidateLocation;
 import com.project.capstone.candidateLocation.repository.CandidateLocationRepository;
-import com.project.capstone.member.dto.request.MemberEditRequest;
 import com.project.capstone.member.dto.response.MemberEditPageResponse;
 import com.project.capstone.member.dto.response.MainpageResponse;
 import com.project.capstone.member.dto.response.MypageResponse;
@@ -25,6 +25,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.awt.print.Book;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +52,7 @@ public class MemberService {
 
     private final MailService mailService;
 
+    @Transactional
     public void register(MemberRegisterRequest request) {
         //이미 등록된 이메일
         if (memberRepository.existsByEmail(request.memberEmail())) {
@@ -66,24 +68,31 @@ public class MemberService {
                 .build();
         memberRepository.save(member);
     }
+
     public boolean idDuplicatedCheck(String username) {
+
         //중복이 있으면 true 중복이 없으면 false
         return memberRepository.existsByUsername(username);
     }
 
     // 토큰에서 추출한 사용자 정보로 마이페이지에서 조회할 찜 리스트, 스케줄 리스트 반환
     public MypageResponse getMyPage(String username){
-        Member member = memberRepository.findByUsername(username);
+
 
         List<Bookmark> bookmarks = bookmarkRepository.findAllByMemberId(member.getId()); // 멤버가 찜한 장소 리스트 반환
         List<BookmarkResponse> bookmarksList = bookmarks.stream().map(BookmarkResponse::of).toList();
         log.info("마이페이지 내부 북마크 = {}", bookmarksList);
 
-        List<Schedule> schedules = scheduleRepository.findAllById(member.getId()); // 멤버가 만든 스케줄 반환
+        List<Schedule> schedules = member.getSchedules();
         List<ScheduleResponse> schedulesList = schedules.stream().map(ScheduleResponse::of).toList();
         log.info("마이페이지 내부 스케줄 = {}", schedulesList);
 
-        MypageResponse mypageResponse = new MypageResponse(bookmarksList, schedulesList);
+        List<Bookmark> bookmarks = member.getBookmarks();
+        List<BookmarkResponse> bookmarksList = bookmarks.stream().map(BookmarkResponse::of).toList();
+        log.info("마이페이지 내부 북마크 = {}", bookmarksList);
+
+        MypageResponse mypageResponse = new MypageResponse(schedulesList, bookmarksList);
+        log.info("mypageResponse = {}",mypageResponse);
 
         return mypageResponse;
     }
@@ -140,7 +149,6 @@ public class MemberService {
         return new MainpageResponse(null, bookmarkList);
     }
 
-
     //회원가입시 이메일에 인증코드 보내기
     public void sendCodeToEmailForRegistration(String email) {
 
@@ -163,7 +171,6 @@ public class MemberService {
         }
         sendVerificationCode(email);
     }
-
 
     // 공통으로 인증 코드를 전송하는 메서드
     private void sendVerificationCode(String email) {
@@ -214,6 +221,7 @@ public class MemberService {
         return member.get().getUsername();
 
     }
+
     public void changePassword(String email, String newPassword) {
         Optional<Member> member = memberRepository.findByEmail(email);
         log.info("member객체:{}",member);
@@ -229,6 +237,7 @@ public class MemberService {
         // 변경된 비밀번호 저장
         memberRepository.save(member2);
     }
+
     // 이메일 형식 검증 메서드
     private boolean isValidEmailFormat(String email) {
         String emailRegex = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$"; // 간단한 이메일 정규식
@@ -240,4 +249,59 @@ public class MemberService {
         return memberRepository.findByEmail(email).isPresent();
     }
 
+    /**
+     * 창을 닫거나, 로그아웃 시 
+     * user의 정보
+     * bookmarks(찜 리스트),
+     * candidateLocations(장바구니 리스트)
+     * 를 저장
+     */
+    @Transactional
+    public void saveUserData(String username,
+                             SaveUserInfoRequest saveUserInfoRequest) {
+
+        // 1. username으로 Member 조회
+        Member member = memberRepository.findByUsername(username);
+        if (member == null) {
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_FOUND);
+        }
+        log.info("member 조회 결과 = {}", member);
+
+        // 2. 기존 Bookmarks 삭제 후 새로 추가
+        member.deleteAllBookmarks();
+        log.info("{}의 모든 bookmarks = {}", member, member.getBookmarks());
+        List<Bookmark> bookmarks = getBookmarks(saveUserInfoRequest);
+        for(Bookmark bookmark : bookmarks){
+            member.addBookmark(bookmark);
+        }
+        log.info("{}의 모든 bookmarks = {}", member, member.getBookmarks());
+        log.info("북마크 데이터 저장 완료. 데이터: {}", bookmarks);
+
+        // 3. 기존 CandidateLocations 삭제 후 새로 추가
+        member.deleteAllCandidateLocations();
+        log.info("{}의 모든 candidateLocations = {}", member, member.getCandidateLocations());
+        List<CandidateLocation> candidateLocations = getCandidateLocations(saveUserInfoRequest, member);
+        for(CandidateLocation candidateLocation : candidateLocations){
+            member.addCandidateLocation(candidateLocation);
+        }
+        log.info("{}의 모든 candidateLocations = {}", member, member.getCandidateLocations());
+        log.info("장바구니 데이터 저장 완료. 데이터: {}", candidateLocations);
+    }
+
+    private static List<CandidateLocation> getCandidateLocations(SaveUserInfoRequest saveUserInfoRequest, Member member) {
+        return saveUserInfoRequest.getCandidateLocations().stream()
+                .map(locationRequest -> CandidateLocation.builder()
+                        .member(member)
+                        .location(locationRequest.location())
+                        .build())
+                .toList();
+    }
+
+    private static List<Bookmark> getBookmarks(SaveUserInfoRequest saveUserInfoRequest) {
+        return saveUserInfoRequest.getBookmarks().stream()
+                .map(bookmarkResponse -> Bookmark.builder()
+                        .location(bookmarkResponse.location())
+                        .build())
+                .toList();
+    }
 }

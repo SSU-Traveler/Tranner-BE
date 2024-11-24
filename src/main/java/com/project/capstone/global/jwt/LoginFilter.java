@@ -17,6 +17,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -31,9 +32,10 @@ import java.util.List;
 import java.util.Map;
 
 // 로그인할 때 사용자를 인증하는 필터
-
+@Slf4j
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
+
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final CandidateLocationRepository locationRepository;
@@ -41,9 +43,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final MemberRepository memberRepository;
     // RedisSessionService 추가
     private final RedisSessionService redisSessionService;
-
-
-
 
     //사용자 로그인 데이터 추출
     @Override
@@ -118,6 +117,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(new ObjectMapper().writeValueAsString(loginResponse));
 
+        log.info("{} 로그인 성공",username);
     }
 
     // 검증에 실패한 경우

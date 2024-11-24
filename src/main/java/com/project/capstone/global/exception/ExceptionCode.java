@@ -22,7 +22,11 @@ public enum ExceptionCode {
     FAILED_LOGIN(401, "회원정보가 일치하지 않습니다."), // 401 Unauthorized
 
     //jwt 토큰 관련
-    FAILED_AUTHENTICATION(401,"사용자 검증에 실패하였습니다.");
+    FAILED_AUTHENTICATION(401,"사용자 검증에 실패하였습니다."),
+
+    // 스케줄 관련
+    SCHEDULE_NOT_FOUND(404, "스케줄을 찾을 수 없습니다."); // 404 Not Found
+
     // 추가적인 예외 코드 정의 가능
 
     private final int status;
