@@ -17,7 +17,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -109,6 +108,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         MainpageResponse bookmarkResponse = memberService.getBookmarkLocations(username);
         List<BookmarkResponse> bookmark = bookmarkResponse.getBookmark();
 
+        List<CandidateLocation> list = locationRepository.findByMember(member);
+        List<CandidateLocationResponse> candidateLocationList = list.stream().map(CandidateLocationResponse::of).toList();
 
         // 응답을 JSON 형식으로 쓰기
         LoginResponse loginResponse = new LoginResponse(candidateLocation, bookmark, accessToken, refreshToken, username, nickname , 60 * 60 * 1000,14 * 24 * 60 * 60 * 1000);
