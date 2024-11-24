@@ -13,8 +13,11 @@ import java.util.List;
 public class MainpageResponse<T> {
     @Schema(description = "장바구니 리스트 데이터")
     private List<CandidateLocationResponse> candidateLocation;
+    private List<BookmarkResponse> bookmark;
 
-    public MainpageResponse(List<CandidateLocationResponse> candidateLocation) {
+
+    public MainpageResponse(List<CandidateLocationResponse> candidateLocation , List<BookmarkResponse> bookmark) {
         this.candidateLocation = candidateLocation;
+        this.bookmark = bookmark;
     }
 }

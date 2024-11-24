@@ -19,6 +19,7 @@ public class CandidateLocation { // 장바구니임 , 찜 아님
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
+    private String username;
 
     public void saveMember(Member member){
         this.member=member;

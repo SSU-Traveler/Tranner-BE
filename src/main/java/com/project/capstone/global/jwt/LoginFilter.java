@@ -1,13 +1,17 @@
-
 package com.project.capstone.global.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.capstone.candidateLocation.domain.CandidateLocation;
 import com.project.capstone.candidateLocation.repository.CandidateLocationRepository;
 import com.project.capstone.global.dto.response.LoginResponse;
-import com.project.capstone.global.exception.BusinessLogicException;
 import com.project.capstone.global.exception.ExceptionCode;
+import com.project.capstone.member.domain.Member;
 import com.project.capstone.member.dto.response.CustomUserDetails;
+import com.project.capstone.member.dto.response.MainpageResponse;
+import com.project.capstone.member.repository.MemberRepository;
+import com.project.capstone.member.service.MemberService;
+import com.project.capstone.redis.RedisSessionService;
+import com.project.capstone.schedule.dto.response.BookmarkResponse;
 import com.project.capstone.schedule.dto.response.CandidateLocationResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,8 +37,15 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final CandidateLocationRepository locationRepository;
+    private final MemberService memberService;
+    private final MemberRepository memberRepository;
+    // RedisSessionService 추가
+    private final RedisSessionService redisSessionService;
 
 
+
+
+    //사용자 로그인 데이터 추출
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
 
@@ -52,8 +63,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String username = loginData.get("username");
         String password = loginData.get("password");
 
-        System.out.println(username);
-        System.out.println(password);
         // 인증을 수행하는 AuthenticationManager로 정보를 보내기 위해선 Token에 정보를 담아야함
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password, null);
         return authenticationManager.authenticate(authToken); // 검증을 진행하기 위해 Token을 보냄
@@ -71,14 +80,40 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
-        String token = jwtUtil.createJwt(username, role, 60 * 60 * 24 * 365 * 100L);
+        Member member = memberRepository.findNicknameByUsername(username);
 
-        response.addHeader("Authorization", "Bearer " + token);
-        List<CandidateLocation> list = locationRepository.findByMember_Username(username);
+        String nickname = member.getNickname();
+        //Access Token 생성
+        String accessToken = jwtUtil.createAccessToken(username, role);
+        //Refresh Token 생성
+        String refreshToken = jwtUtil.createRefreshToken(username, role);
+
+        response.addHeader("Authorization", "Bearer " + accessToken);
+        response.addHeader("Refresh-Token", "Bearer " + refreshToken);
+
+        // Redis에 로그인 세션 정보 저장
+        String sessionId = "session:" + username; // 세션 ID 생성
+        redisSessionService.saveSession(sessionId, customUserDetails);
+
+
+        // Redis에 사용자 아이디 저장
+        String redisUserKey = "user:" + username; // 사용자 ID 저장을 위한 Key
+        redisSessionService.saveSession(redisUserKey, username);
+
+        // 장바구니 정보 가져오기
+        MainpageResponse candidateLocationResponse = memberService.getCandidateLocations(username);
+        List<CandidateLocationResponse> candidateLocation = candidateLocationResponse.getCandidateLocation();
+
+        // 찜 목록 정보 가져오기
+        MainpageResponse bookmarkResponse = memberService.getBookmarkLocations(username);
+        List<BookmarkResponse> bookmark = bookmarkResponse.getBookmark();
+
+        List<CandidateLocation> list = locationRepository.findByMember(member);
         List<CandidateLocationResponse> candidateLocationList = list.stream().map(CandidateLocationResponse::of).toList();
-        LoginResponse loginResponse = new LoginResponse(candidateLocationList);
 
         // 응답을 JSON 형식으로 쓰기
+        LoginResponse loginResponse = new LoginResponse(candidateLocation, bookmark, accessToken, refreshToken, username, nickname , 60 * 60 * 1000,14 * 24 * 60 * 60 * 1000);
+        response.setContentType("application/json");
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(new ObjectMapper().writeValueAsString(loginResponse));

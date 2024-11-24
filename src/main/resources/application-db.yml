@@ -1,4 +1,12 @@
 spring:
+  server:
+    address: 0.0.0.0
+    port: 8443  # 원하는 포트로 변경
+    ssl:
+      key-store: classpath:keystore.p12  # 키스토어 파일 경로
+      key-store-password: traveler2024  # 키스토어 생성 시 입력한 비밀번호
+      key-store-type: PKCS12  # 키스토어 타입
+      key-alias: tomcat
   config:
     import: optional:application-secret.properties
   datasource:

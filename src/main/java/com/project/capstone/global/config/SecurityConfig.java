@@ -1,11 +1,15 @@
 package com.project.capstone.global.config;
 
+import com.project.capstone.bookmark.repository.BookmarkRepository;
 import com.project.capstone.candidateLocation.repository.CandidateLocationRepository;
 import com.project.capstone.global.jwt.JwtFilter;
 import com.project.capstone.global.jwt.JwtUtil;
 import com.project.capstone.global.jwt.LoginFilter;
+import com.project.capstone.member.repository.MemberRepository;
+import com.project.capstone.member.service.MemberService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,12 +29,19 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtUtil jwtUtil;
     private final CandidateLocationRepository candidateLocationRepository;
+    private final MemberService memberService;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil, CandidateLocationRepository candidateLocationRepository) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil, CandidateLocationRepository candidateLocationRepository, @Lazy MemberService memberService) {
+    private final MemberRepository memberRepository;
+
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JwtUtil jwtUtil, CandidateLocationRepository candidateLocationRepository, MemberRepository memberRepository) {
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
         this.candidateLocationRepository = candidateLocationRepository;
+        this.memberService = memberService;
+
+        this.memberRepository = memberRepository;
     }
 
 
@@ -45,7 +56,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, BookmarkRepository bookmarkRepository, MemberRepository memberRepository) throws Exception {
 
         //csrf disable
         http
@@ -71,15 +82,17 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/login", "/member/register","/member/emails/verification-requests", "/member/emails/verifications","/member/findid"
-                        ,"/member/findpw/emails","/member/findpw/verify","/member/findpw/change", "/main").permitAll()
+                        .requestMatchers("/login", "/member/register","/member/emails/register-requests","/member/emails/resetPassword-requests", "/member/emails/verifications","/member/findid"
+
+                        ,"/member/findpw/emails","/member/findpw/verify","/member/findpw/change", "/main" , "/member/idDuplicatedCheck").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
         http
                 .addFilterBefore(new JwtFilter(jwtUtil), LoginFilter.class);
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, candidateLocationRepository), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, candidateLocationRepository, memberService ,memberRepository), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, candidateLocationRepository, memberRepository), UsernamePasswordAuthenticationFilter.class);
 
         //세션 설정
         http

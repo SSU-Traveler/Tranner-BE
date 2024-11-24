@@ -52,10 +52,6 @@ public class MemberService {
     private final MailService mailService;
 
     public void register(MemberRegisterRequest request) {
-        //이미 등록된 사용자
-        if (memberRepository.existsByUsername(request.username())) {
-            throw new BusinessLogicException(ExceptionCode.USERID_EXISTS);
-        }
         //이미 등록된 이메일
         if (memberRepository.existsByEmail(request.memberEmail())) {
             throw new BusinessLogicException(ExceptionCode. MEMBER_EMAIL_EXISTS);
@@ -70,12 +66,16 @@ public class MemberService {
                 .build();
         memberRepository.save(member);
     }
+    public boolean idDuplicatedCheck(String username) {
+        //중복이 있으면 true 중복이 없으면 false
+        return memberRepository.existsByUsername(username);
+    }
 
     // 토큰에서 추출한 사용자 정보로 마이페이지에서 조회할 찜 리스트, 스케줄 리스트 반환
     public MypageResponse getMyPage(String username){
         Member member = memberRepository.findByUsername(username);
 
-        List<Bookmark> bookmarks = bookmarkRepository.findAllById(member.getId()); // 멤버가 찜한 장소 리스트 반환
+        List<Bookmark> bookmarks = bookmarkRepository.findAllByMemberId(member.getId()); // 멤버가 찜한 장소 리스트 반환
         List<BookmarkResponse> bookmarksList = bookmarks.stream().map(BookmarkResponse::of).toList();
         log.info("마이페이지 내부 북마크 = {}", bookmarksList);
 
@@ -111,27 +111,64 @@ public class MemberService {
     // 사용자의 장바구니 정보를 추출
     public MainpageResponse getCandidateLocations(String username){
         Member member = memberRepository.findByUsername(username);
+        if (member == null) {
+            throw new IllegalArgumentException("해당 사용자를 찾을 수 없습니다: " + username);
+        }
         List<CandidateLocation> candidateLocations = candidateLocationRepository.findAllByMemberId(member.getId());
-        List<CandidateLocationResponse> candidateLocationList = candidateLocations.stream().map(CandidateLocationResponse::of).toList();
+        List<CandidateLocationResponse> candidateLocationList = candidateLocations.stream()
+                .map(CandidateLocationResponse::of)
+                .toList();
         log.info("멤버의 장바구니 정보 = {}", candidateLocationList);
-        MainpageResponse mainpageResponse = new MainpageResponse(candidateLocationList);
-        return mainpageResponse;
+        return new MainpageResponse(candidateLocationList, null);
     }
-    //이메일에 인증코드 보내기
-    public void sendCodeToEmail(String email) {
+
+    // 사용자의 찜 목록 정보를 추출
+    public MainpageResponse getBookmarkLocations(String username) {
+        // 멤버 정보 가져오기
+        Member member = memberRepository.findByUsername(username);
+        if (member == null) {
+            throw new IllegalArgumentException("해당 사용자를 찾을 수 없습니다: " + username);
+        }
+        // 찜 목록 가져오기
+        List<Bookmark> bookmarks = bookmarkRepository.findAllByMemberId(member.getId());
+        List<BookmarkResponse> bookmarkList = bookmarks.stream()
+                .map(BookmarkResponse::of)
+                .toList();
+        log.info("멤버의 찜 목록 정보 = {}", bookmarkList);
+
+        // MainpageResponse 생성 및 반환
+        return new MainpageResponse(null, bookmarkList);
+    }
+
+
+    //회원가입시 이메일에 인증코드 보내기
+    public void sendCodeToEmailForRegistration(String email) {
 
         //알맞은 이메일 형식이 아닌경우
         if (!isValidEmailFormat(email)) {
             throw new BusinessLogicException(ExceptionCode.INVALID_EMAIL_FORMAT);
         }
 
-        // 이메일이 등록되어 있는지 확인
-        if (!isEmailRegistered(email)) {
+        // 이미 등록된 이메일인지 확인
+        if (isEmailRegistered(email)) {
+            throw new BusinessLogicException(ExceptionCode. MEMBER_EMAIL_EXISTS);
+        }
+        sendVerificationCode(email);
+    }
+
+    //비밀번호 변경시 이메일에 인증코드 보내기
+    public void sendCodeToEmailForPasswordReset(String email) {
+        if (!isValidEmailFormat(email)) {
             throw new BusinessLogicException(ExceptionCode.EMAIL_NOT_REGISTERED);
         }
+        sendVerificationCode(email);
+    }
 
+
+    // 공통으로 인증 코드를 전송하는 메서드
+    private void sendVerificationCode(String email) {
         String code = generateRandomCode(); // 랜덤 코드 생성
-        log.info("인증코드 :{}",code);
+        log.info("인증코드 :{}", code);
         mailService.sendEmail(email, "Trannere 인증코드", "인증 코드: " + code);
 
         // 인증 코드와 만료 시간 저장
@@ -139,11 +176,13 @@ public class MemberService {
         emailVerificationExpirations.put(email, System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5)); // 5분 유효
     }
 
+    //랜덤코드 생성메서드
     private String generateRandomCode() {
         int randomCode = new Random().nextInt(999999); // 0~999999 사이의 난수 생성
         return String.format("%06d", randomCode); // 6자리 문자열로 변환
     }
 
+    //인증코드 확인 메서드
     public EmailVerificationResult verificationCode(String email, String authCode) {
         String storedCode = emailVerificationCodes.get(email);
         Long expirationTime = emailVerificationExpirations.get(email);
