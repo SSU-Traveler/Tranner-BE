@@ -34,8 +34,12 @@ services:
     container_name: my_nginx
     ports:
       - "80:80"
+      - "443:443"  # HTTPS 포트 매핑 추가
     volumes:
       - /home/ubuntu/nginx.conf:/etc/nginx/nginx.conf
+      - /etc/letsencrypt/live/api.tranner.com:/etc/letsencrypt/live/api.tranner.com:ro
+      - /etc/letsencrypt/archive/api.tranner.com:/etc/letsencrypt/archive/api.tranner.com:ro
+      - /etc/letsencrypt/keys:/etc/letsencrypt/keys:ro
     depends_on:
       - app1
       - app2
