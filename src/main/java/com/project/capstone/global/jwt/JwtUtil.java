@@ -1,5 +1,6 @@
 package com.project.capstone.global.jwt;
 import io.jsonwebtoken.Jwts;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -12,8 +13,9 @@ import java.util.UUID;
 @Component
 public class JwtUtil {
     private SecretKey secretKey;
-    private final long accessTokenExpirationMs = 60 * 60 * 1000; // 1 hour
-    private final long refreshTokenExpirationMs = 14 * 24 * 60 * 60 * 1000; //2weeks
+    @Getter private final long accessTokenExpirationMs = 60 * 60 * 1000; // 1 hour
+    @Getter private final long refreshTokenExpirationMs = 14 * 24 * 60 * 60 * 1000; //2weeks
+
     public JwtUtil(@Value("${spring.jwt.secret}") String secret) {
         this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
     }

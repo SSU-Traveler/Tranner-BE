@@ -102,7 +102,7 @@ public class MemberController {
     }
 
     //이메일 인증코드 확인
-    @GetMapping("/emails/verifications")
+    @PostMapping("/emails/verifications")
     public ResponseEntity<EmailVerificationResult> verificationEmail( @RequestBody Map<String, String> request) {
 
         String email = request.get("email");
