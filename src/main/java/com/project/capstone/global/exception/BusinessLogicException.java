@@ -23,7 +23,6 @@ public class BusinessLogicException extends RuntimeException {
         return code;
     }
 
-
     // HTTP 상태 코드 반환
     public int getStatus() {
         return code.getStatus(); // ExceptionCode에서 상태 코드를 가져옴

@@ -3,6 +3,7 @@ package com.project.capstone.member.controller;
 import com.project.capstone.global.jwt.JwtUtil;
 import com.project.capstone.member.dto.request.MemberEditRequest;
 import com.project.capstone.member.dto.request.MemberRegisterRequest;
+import com.project.capstone.member.dto.request.SaveUserInfoRequest;
 import com.project.capstone.member.dto.response.MemberEditPageResponse;
 
 import com.project.capstone.member.dto.response.EmailVerificationResult;
@@ -12,7 +13,6 @@ import com.project.capstone.member.dto.response.MypageResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -21,16 +21,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
-
-import org.springframework.http.ResponseEntity;
-
-import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,10 +36,14 @@ public class MemberController {
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody MemberRegisterRequest request) {
         memberService.register(request);
-
         return ResponseEntity.ok("회원가입에 성공하였습니다.");
     }
 
+    @GetMapping("/idDuplicatedCheck")
+    public ResponseEntity<Boolean> idDuplicatedCheck(@RequestParam String id){
+        boolean result =  memberService.idDuplicatedCheck(id);
+        return ResponseEntity.ok().body(result);
+    }
     // 마이페이지
     @GetMapping("/mypage")
     public ResponseEntity<MypageResponse> mypage(HttpServletRequest request) {
@@ -92,15 +86,23 @@ public class MemberController {
                 .build();
     }
 
-    //이메일 보내기
-    @PostMapping("/emails/verification-requests")
-    public ResponseEntity<Void> sendMessage(@RequestBody Map<String,String> request) {
+    //회원가입 이메일 보내기
+    @PostMapping("/emails/register-requests")
+    public ResponseEntity<Void> sendMessageForRegister(@RequestBody Map<String,String> request) {
+  
         memberService.sendCodeToEmailForRegistration(request.get("email"));
         return ResponseEntity.ok().build();
     }
 
-    //이메일 인증
-    @GetMapping("/emails/verifications")
+    //비밀번호 변경시 이메일 보내기
+    @PostMapping("/emails/resetPassword-requests")
+    public ResponseEntity<Void> sendMessageForPassword(@RequestBody Map<String,String> request) {
+        memberService.sendCodeToEmailForPasswordReset(request.get("email"));
+        return ResponseEntity.ok().build();
+    }
+
+    //이메일 인증코드 확인
+    @PostMapping("/emails/verifications")
     public ResponseEntity<EmailVerificationResult> verificationEmail( @RequestBody Map<String, String> request) {
 
         String email = request.get("email");
@@ -109,7 +111,6 @@ public class MemberController {
         String authCode = request.get("authCode");
         log.info("사용자가 보낸 인증코드 :{}",authCode);
 
-
         EmailVerificationResult response = memberService.verificationCode(email, authCode);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -117,11 +118,14 @@ public class MemberController {
     //아이디 찾기
     @PostMapping("/findid")
     public ResponseEntity<Map<String, String>> findid(@Valid @RequestBody Map<String, String> request) {
+
         String email = request.get("email");
         log.info("이메일 요청: {} ", email);
 
         String username = memberService.findUsernameByEmail(email);
         log.info("이메일 요청한 사용자: {} ", username);
+
+
         Map<String, String> response = new HashMap<>();
         response.put("username", username);
 
@@ -145,21 +149,17 @@ public class MemberController {
 
         String email = (String) session.getAttribute("email");
         log.info("세션email2:{}", email);
-        String code = request.get("code");
+        String authCode = request.get("authCode");
 
-        EmailVerificationResult result = memberService.verificationCode(email, code);
-        if (result.isVerified()) {
-            return ResponseEntity.ok("인증이 완료되었습니다. 비밀번호 페이지로 이동합니다.");
-
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증코드가 유효하지 않습니다.");
-        }
+        EmailVerificationResult result = memberService.verificationCode(email, authCode);
+        return ResponseEntity.ok("이메일 인증이 완료되었습니다.");
     }
 
     //비밀번호 변경
     @PostMapping("findpw/change")
-    public ResponseEntity<String> changePassword(
-            @RequestBody Map<String, String> request, HttpSession session) {
+    public ResponseEntity<String> changePassword(@RequestBody Map<String, String> request,
+                                                 HttpSession session) {
+
         String newPassword = request.get("newPassword");
         String email = (String) session.getAttribute("email");
 
@@ -168,4 +168,25 @@ public class MemberController {
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
     }
 
+    // user가 창을 닫거나, 로그아웃 했을 때, 북마크(찜), 장바구니 리스트를 저장해야됨
+    // 왜냐하면 user 가 사용 중간에 내용을 변경했을 테니까
+    @PostMapping("/saveUserInfo")
+    public ResponseEntity<String> saveUserInfo(HttpServletRequest request,
+                                               @RequestBody SaveUserInfoRequest saveUserInfoRequest){
+
+        String tokenStr = request.getHeader("Authorization");
+        String token = tokenStr.split(" ")[1];
+        String username = jwtUtil.getUsername(token);
+
+        log.info("창을 닫거나, 로그아웃을 한 username은 = {}", username);
+
+        // DTO에서 받은 데이터 확인 (로깅 및 디버깅용)
+        log.info("Candidate Locations: " + saveUserInfoRequest.getCandidateLocations());
+        log.info("Bookmarks: " + saveUserInfoRequest.getBookmarks());
+
+        // 저장 로직 수행
+        memberService.saveUserData(username,saveUserInfoRequest);
+
+        return ResponseEntity.ok("User 정보 (bookmarks(찜 리스트),candidateLocations(장바구니 리스트)) 저장 성공");
+    }
 }

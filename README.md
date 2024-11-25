@@ -54,3 +54,26 @@
     public boolean editMember(String username,
                               MemberEditRequest memberEditRequest)
    ```
+
+### 241118 수정 내용
+1. user가 창을 닫거나, 로그아웃 했을 때, 북마크(찜), 장바구니 리스트를 저장을 위해 controller에 
+   ```
+   @PostMapping("/saveUserInfo")
+   public ResponseEntity<String> saveUserInfo(HttpServletRequest request,
+   @RequestBody SaveUserInfoRequest saveUserInfoRequest)
+   ```
+   추가
+   왜냐하면 user 가 사용 중간에 내용(찜, 장바구니)을 변경했을 테니까...
+2. 북마크, 장바구니 리스트 요청에 대한 dto
+   BookmarkRequest, CandidateLocationRequest, SaveUserInfoRequest를 dto의 request에 추가
+3. user의 북마크, 장바구니 리스트를 수정하기 위한 service 메소드를 MemberService에 추가
+   ```
+   public void saveUserData(String username,
+                             SaveUserInfoRequest saveUserInfoRequest)
+   ```
+4. user의 모든 북마크 삭제, 장바구니 삭제 메소드를 /member/domain/Member에 추가
+   ```
+   public void deleteAllBookmarks()
+   public void deleteAllCandidateLocations()
+   ```
+
