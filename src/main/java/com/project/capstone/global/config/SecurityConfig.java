@@ -84,7 +84,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/login", "/member/register","/member/emails/verification-requests", "/member/emails/verifications","/member/findid"
-                        ,"/member/findpw/emails","/member/findpw/verify","/member/findpw/change", "/main" , "/member/idDuplicatedCheck","/oauth/callback/kakao","/api/kakaoLogin","/kakaoLogin").permitAll()
+                        ,"/member/findpw/emails","/member/findpw/verify","/member/findpw/change", "/main" , "/member/idDuplicatedCheck","/oauth/callback/kakao","/api/kakaoLogin","/kakaoLogin, /auth/refresh").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
