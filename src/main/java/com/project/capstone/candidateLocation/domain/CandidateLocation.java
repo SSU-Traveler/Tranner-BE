@@ -32,7 +32,6 @@ public class CandidateLocation { // 장바구니임 , 찜 아님
     @Column(name = "location", nullable = false)
     private String location;
 
-
     /**
      * toString() 에서 @ManyToOne의 객체를 넣을거면, 직접 구현해야됨
      */

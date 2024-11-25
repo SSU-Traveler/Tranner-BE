@@ -1,5 +1,7 @@
 package com.project.capstone.schedule.service;
 
+import com.project.capstone.global.exception.BusinessLogicException;
+import com.project.capstone.global.exception.ExceptionCode;
 import com.project.capstone.global.exception.ScheduleNotFoundException;
 import com.project.capstone.member.domain.Member;
 import com.project.capstone.member.repository.MemberRepository;
@@ -27,6 +29,7 @@ import com.project.capstone.schedule.dto.response.BookmarkResponse;
 import com.project.capstone.schedule.dto.response.CandidateLocationResponse;
 import com.project.capstone.schedule.dto.response.ListScheduleResponse;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -133,9 +136,22 @@ public class ScheduleService {
         // 장바구니는 담아놓고 로그아웃 했을 경우에만 저장 후 로그아웃
         // 로그인했을 경우에 저장된 장바구니 리스트 반환
 
-        List<Bookmark> bookmarks = bookmarkRepository.findAllById(member.getId()); // 멤버가 찜한 장소 리스트 반환
+        List<Bookmark> bookmarks = bookmarkRepository.findAllByMemberId(member.getId()); // 멤버가 찜한 장소 리스트 반환
         List<BookmarkResponse> bookmarksList = bookmarks.stream().map(BookmarkResponse::of).toList();
         ListScheduleResponse listScheduleResponse = new ListScheduleResponse(candidateLocationList, bookmarksList); // 장바구니 리스트, 찜한 장소 리스트를 넘겨줌
         return listScheduleResponse;
+    }
+
+    // 스케줄 하나를 삭제
+    @Transactional
+    public void deleteSchedule(String username, Long scheduleId) {
+
+        Member member = memberRepository.findByUsername(username);
+
+        // 스케줄 존재 여부 확인
+        Optional<Schedule> schedule4Delete = scheduleRepository.findById(scheduleId);
+
+        if(schedule4Delete.isEmpty()) throw new BusinessLogicException(ExceptionCode.SCHEDULE_NOT_FOUND);
+        else member.deleteSchedule(schedule4Delete.get());
     }
 }

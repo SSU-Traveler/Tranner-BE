@@ -7,12 +7,18 @@ import com.project.capstone.global.dto.response.LoginResponse;
 import com.project.capstone.global.exception.ExceptionCode;
 import com.project.capstone.member.domain.Member;
 import com.project.capstone.member.dto.response.CustomUserDetails;
+import com.project.capstone.member.dto.response.MainpageResponse;
 import com.project.capstone.member.repository.MemberRepository;
+import com.project.capstone.member.service.MemberService;
+import com.project.capstone.redis.RedisSessionService;
+import com.project.capstone.schedule.dto.response.BookmarkResponse;
 import com.project.capstone.schedule.dto.response.CandidateLocationResponse;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,15 +33,19 @@ import java.util.List;
 import java.util.Map;
 
 // 로그인할 때 사용자를 인증하는 필터
-
+@Slf4j
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
+
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final CandidateLocationRepository locationRepository;
+    private final MemberService memberService;
     private final MemberRepository memberRepository;
+    // RedisSessionService 추가
+    private final RedisSessionService redisSessionService;
 
-
+    //사용자 로그인 데이터 추출
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
 
@@ -58,7 +68,57 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         return authenticationManager.authenticate(authToken); // 검증을 진행하기 위해 Token을 보냄
     }
 
-    // 검증에 성공했을 경우
+//    // 검증에 성공했을 경우
+//    @Override
+//    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException {
+//        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+//        String username = customUserDetails.getUsername();
+//
+//        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+//        Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
+//        GrantedAuthority auth = iterator.next();
+//
+//        String role = auth.getAuthority();
+//        Member member = memberRepository.findNicknameByUsername(username);
+//        String nickname = member.getNickname();
+//        //Access Token 생성
+//        String accessToken = jwtUtil.createAccessToken(username, role);
+//        //Refresh Token 생성
+//        String refreshToken = jwtUtil.createRefreshToken(username, role);
+//
+//        response.addHeader("Authorization", "Bearer " + accessToken);
+//        response.addHeader("Refresh-Token", "Bearer " + refreshToken);
+//
+//        // Redis에 로그인 세션 정보 저장
+//        String sessionId = "session:" + username; // 세션 ID 생성
+//        redisSessionService.saveSession(sessionId, customUserDetails);
+//
+//        // Redis에 사용자 아이디 저장
+//        String redisUserKey = "user:" + username; // 사용자 ID 저장을 위한 Key
+//        redisSessionService.saveSession(redisUserKey, username);
+//
+//        // 장바구니 정보 가져오기
+//        MainpageResponse candidateLocationResponse = memberService.getCandidateLocations(username);
+//        List<CandidateLocationResponse> candidateLocation = candidateLocationResponse.getCandidateLocation();
+//
+//        // 찜 목록 정보 가져오기
+//        MainpageResponse bookmarkResponse = memberService.getBookmarkLocations(username);
+//        List<BookmarkResponse> bookmark = bookmarkResponse.getBookmark();
+//
+//        List<CandidateLocation> list = locationRepository.findByMember(member);
+//        List<CandidateLocationResponse> candidateLocationList = list.stream().map(CandidateLocationResponse::of).toList();
+//
+//        // 응답을 JSON 형식으로 쓰기
+//        LoginResponse loginResponse = new LoginResponse(candidateLocation, bookmark, accessToken, refreshToken, username, nickname , 60 * 60 * 1000,14 * 24 * 60 * 60 * 1000);
+//        response.setContentType("application/json");
+//        response.setContentType("application/json");
+//        response.setCharacterEncoding("UTF-8");
+//        response.getWriter().write(new ObjectMapper().writeValueAsString(loginResponse));
+//
+//        log.info("{} 로그인 성공",username);
+//    }
+// 검증에 성공했을 경우
+
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -69,23 +129,49 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
 
         String role = auth.getAuthority();
-
+        Member member = memberRepository.findNicknameByUsername(username);
+        String nickname = member.getNickname();
+        //Access Token 생성
         String accessToken = jwtUtil.createAccessToken(username, role);
+        //Refresh Token 생성
         String refreshToken = jwtUtil.createRefreshToken(username, role);
 
-        response.addHeader("Authorization", "Bearer " + accessToken);
-        response.addHeader("Refresh-Token", "Bearer " + refreshToken);
-        Member member = memberRepository.findByUsername(username);
-        List<CandidateLocation> list = locationRepository.findByMember(member);
-        List<CandidateLocationResponse> candidateLocationList = list.stream().map(CandidateLocationResponse::of).toList();
+        //cookie 생성
+        Cookie cookie = new Cookie("refreshToken", refreshToken);
+        int maxAge = (int)(jwtUtil.getRefreshTokenExpirationMs()/1000);
+        cookie.setMaxAge(maxAge);
+
+        //cookie.setSecure(true);
+        cookie.setSecure(false);
+        cookie.setHttpOnly(true);
+        cookie.setDomain("localhost");
+        cookie.setPath("/");
+
+        response.addCookie(cookie);
+
+        response.setStatus(HttpServletResponse.SC_OK);
+
+        response.setHeader("Authorization", "Bearer " + accessToken);
+        response.setHeader("Refresh-Token", "Bearer " + refreshToken);
+        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
+
+        // 장바구니 정보 가져오기
+        MainpageResponse candidateLocationResponse = memberService.getCandidateLocations(username);
+        List<CandidateLocationResponse> candidateLocation = candidateLocationResponse.getCandidateLocation();
+
+        // 찜 목록 정보 가져오기
+        MainpageResponse bookmarkResponse = memberService.getBookmarkLocations(username);
+        List<BookmarkResponse> bookmark = bookmarkResponse.getBookmark();
 
         // 응답을 JSON 형식으로 쓰기
-        LoginResponse loginResponse = new LoginResponse(candidateLocationList, accessToken, refreshToken);
+        LoginResponse loginResponse = new LoginResponse(candidateLocation, bookmark, accessToken, refreshToken, username, nickname , (int)jwtUtil.getAccessTokenExpirationMs(),14 * 24 * 60 * 60 * 1000);
         response.setContentType("application/json");
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(new ObjectMapper().writeValueAsString(loginResponse));
-
     }
 
     // 검증에 실패한 경우

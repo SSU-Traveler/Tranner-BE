@@ -26,7 +26,7 @@ public class Member {
     @Column(name = "member_id", updatable = false)
     private Long id;
 
-    @Column(name = "user_name", nullable = false) // id, password 할 때, id임
+    @Column(name = "user_name", nullable = false) // id, password 할 때, id임  // unique임
     private String username;
 
     @Column(name = "pw", nullable = false)
@@ -58,7 +58,7 @@ public class Member {
     /******************************************************/
 
     // === 찜 리스트 === //
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "member",fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Bookmark> bookmarks = new ArrayList<>();
 
     public void addBookmark(Bookmark bookmark) {
@@ -71,6 +71,10 @@ public class Member {
 
     public void deleteBookmark(Bookmark bookmark) {
         this.bookmarks.remove(bookmark);
+    }
+
+    public void deleteAllBookmarks(){
+        this.bookmarks.clear();
     }
 
     // === 장바구니 리스트 === //
@@ -95,8 +99,12 @@ public class Member {
         this.candidateLocations.remove(candidateLocation);
     }
 
+    public void deleteAllCandidateLocations() {
+        this.candidateLocations.clear();
+    }
+
     // === 여행 리스트 === //
-    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "member", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Schedule> schedules = new ArrayList<>();
 
     public Optional<Schedule> getSchedule(Schedule schedule){
