@@ -14,12 +14,7 @@ spring:
     url: ${MYSQL_URL}
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
-    hikari:
-      maximum-pool-size: 65
-      minimum-idle: 10
-      idle-timeout: 30000
-      max-lifetime: 1800000
-      connection-timeout: 30000
+
   jpa:
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
