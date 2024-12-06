@@ -35,6 +35,23 @@ services:
     networks:
       - backend
 
+  app3:
+    image: minsokuri/tranner
+    container_name: tranner3
+    ports:
+      - "8083:8080"  # 다른 컨테이너의 포트도 다르게 설정
+    environment:
+      MYSQL_URL: ${MYSQL_URL}
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      JWT_SECRETKEY: ${JWT_SECRETKEY}
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET}
+      KAKAO_REDIRECT_URL: ${KAKAO_REDIRECT_URL}
+    restart: always
+    networks:
+      - backend
+
   nginx:
     image: nginx
     container_name: my_nginx
@@ -49,6 +66,7 @@ services:
     depends_on:
       - app1
       - app2
+      - app3
     networks:
       - backend
 
