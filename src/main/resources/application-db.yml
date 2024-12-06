@@ -1,12 +1,13 @@
 spring:
   server:
     address: 0.0.0.0
-    port: 8443  # 원하는 포트로 변경
+    port: 8443
     ssl:
-      key-store: classpath:keystore.p12  # 키스토어 파일 경로
-      key-store-password: traveler2024  # 키스토어 생성 시 입력한 비밀번호
-      key-store-type: PKCS12  # 키스토어 타입
+      key-store: classpath:keystore.p12
+      key-store-password: traveler2024
+      key-store-type: PKCS12
       key-alias: tomcat
+      enabled-protocols: TLSv1.2,TLSv1.3
   config:
     import: optional:application-secret.properties
   datasource:
@@ -14,18 +15,28 @@ spring:
     url: ${MYSQL_URL}
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 10
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
   jpa:
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
     properties:
       hibernate:
         storage_engine: innodb
-        format_sql: true
-        use_sql_comments: true
+        format_sql: false
+        use_sql_comments: false
+        jdbc.batch_size: 30
+        order_inserts: true
+        order_updates: true
+        default_batch_fetch_size: 30
     hibernate:
-      ddl-auto: update  # 설정해야 테이블 자동 업데이트
+      ddl-auto: update
     open-in-view: false
     show_sql: true
   logging:
     level:
-      org.hibernate: DEBUG
+      org.hibernate: INFO
