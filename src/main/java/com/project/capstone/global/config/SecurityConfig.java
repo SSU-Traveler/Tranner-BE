@@ -65,7 +65,7 @@ public class SecurityConfig {
         http
                 .cors((cors) -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(List.of("http://54.180.196.242",  "localhost:5173")); // 허용할 출처
+                    config.setAllowedOrigins(List.of("http://www.tranner.com",  "localhost:5173")); // 허용할 출처
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // 허용할 HTTP 메서드
                     config.setAllowedHeaders(List.of("*")); // 허용할 헤더
                     config.setAllowCredentials(true); // 자격 증명 허용
